@@ -1,24 +1,33 @@
 import React, { ReactElement } from "react";
 import { useHistory } from "react-router";
+import { useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { AppContext } from "../AppContext";
 import Button from "../components/Button";
 import Input from "../components/Input";
-import { Spacing, Wrapper } from "./Home";
+import {Spacing, Wrapper} from "../components/StyledComponents";
 
 export const Form = styled.form`
   min-width: 100%;
   text-align: center;
 `;
 
+type LocationState = {
+  logout : boolean;
+}
+
 export default function Login(): ReactElement {
   const history = useHistory();
+  const location = useLocation<LocationState>();
   const [email, setEmail] = React.useState<string>("");
   const [password, setPassword] = React.useState<string>("");
-  const { logInUser, handleAuthChange, loading } = React.useContext(AppContext);
+  const { logInUser, signOutUser, signInWithGoogle, handleAuthChange, loading } = React.useContext(AppContext);
 
   React.useEffect(() => {
+    if (location.state?.logout) {
+      signOutUser();
+    }
     handleAuthChange({
       cb: () => {
         history.push("/");
@@ -56,6 +65,10 @@ export default function Login(): ReactElement {
             minLength={6}
             onChange={({ target }) => setPassword(target.value)}
           />
+        </Spacing>
+
+        <Spacing mb="20px">
+          <button className="sign-in" onClick={signInWithGoogle}>Sign in with Google</button>
         </Spacing>
 
         <Spacing mt="20px" mb="10px">

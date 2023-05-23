@@ -5,7 +5,11 @@ import {
   signInWithEmailAndPassword,
   signOut,
   updateProfile,
+  getAuth,
+  signInWithPopup,
+  GoogleAuthProvider
 } from "@firebase/auth";
+import { FirebaseError } from "@firebase/app";
 import { ref, uploadBytes, getDownloadURL } from "@firebase/storage";
 import { query, where, collection, getDocs, doc, setDoc, deleteDoc, updateDoc } from "@firebase/firestore";
 import { auth, db, storage } from "./firebase";
@@ -30,38 +34,42 @@ interface registrationTypes {
   password: string;
 }
 
-interface todoItemInterface {
-  value: string;
+export interface savedItemInterface {
+  title: string;
+  summary: string;
+  url: string;
   itemId: string;
 }
 
 interface contextTypes {
   loading: boolean;
   currentUser: userTypes | null;
-  todoItems: todoItemInterface[];
+  savedItems: savedItemInterface[];
   logInUser(email: string, password: string): Promise<void>;
+  signInWithGoogle(): any;  // FIXME
   registerUser(data: registrationTypes): Promise<void>;
   updateAvatar(file: { image: Blob; ext: string }): Promise<void>;
   signOutUser(): Promise<void>;
-  addTodoItem(value: string): Promise<void>;
-  updateTodoItem(params: { newValue: string; id: string }): Promise<void>;
-  deleteTodoItem(id: string): Promise<void>;
-  getTodoItems(): Promise<void>;
+  addSavedItem(params: { title: string; summary: string, url: string }): Promise<void>;
+  updateSavedItem(params: { newTitle: string; newSummary: string; newUrl: string; id: string }): Promise<void>;
+  deleteSavedItem(id: string): Promise<void>;
+  getSavedItems(): Promise<void>;
   handleAuthChange: (params: { cb?: VoidFunction; err?: VoidFunction }) => void;
 }
 
 const contextDefaultVal: contextTypes = {
   loading: false,
   currentUser: null,
-  todoItems: [],
+  savedItems: [],
   logInUser: async () => {},
+  signInWithGoogle: async () => {},
   registerUser: async () => {},
   updateAvatar: async () => {},
   signOutUser: async () => {},
-  addTodoItem: async () => {},
-  updateTodoItem: async () => {},
-  deleteTodoItem: async () => {},
-  getTodoItems: async () => {},
+  addSavedItem: async () => {},
+  updateSavedItem: async () => {},
+  deleteSavedItem: async () => {},
+  getSavedItems: async () => {},
   handleAuthChange: () => {},
 };
 
@@ -70,18 +78,35 @@ export const AppContext = React.createContext<contextTypes>(contextDefaultVal);
 export default function AppContextProvider({ children }: Props): ReactElement {
   const [currentUser, setCurrentUser] = React.useState<userTypes | null>(null);
   const [loading, setLoading] = React.useState(false);
-  const [todoItems, setTodoItems] = React.useState<todoItemInterface[]>([]);
+  const [savedItems, setSavedItems] = React.useState<savedItemInterface[]>([]);
 
   const logInUser = async (email: string, password: string) => {
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
     } catch (error) {
-      alert(error);
     } finally {
       setLoading(false);
     }
   };
+
+  const signInWithGoogle = async () => {
+    const auth = getAuth();
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      // This gives you a Google Access Token. You can use it to access the Google API.
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const token = credential?.accessToken;
+      const user = result.user;
+    } catch (error) {
+      if (error instanceof FirebaseError) {
+        const errorMessage = error.message;
+        const email = error.customData?.email;
+        const credential = GoogleAuthProvider.credentialFromError(error);
+      }
+    }
+  }
 
   const registerUser = async (data: registrationTypes) => {
     setLoading(true);
@@ -92,7 +117,6 @@ export default function AppContextProvider({ children }: Props): ReactElement {
         });
       });
     } catch (error) {
-      alert(error);
     } finally {
       setLoading(false);
     }
@@ -101,7 +125,6 @@ export default function AppContextProvider({ children }: Props): ReactElement {
   const updateAvatar = async (file: { image: Blob; ext: string }) => {
     try {
       if (auth.currentUser !== null) {
-        //File reference
         const uploadRef = ref(storage, `profileImages/${auth.currentUser.uid}-${uuid()}.${file.ext}`);
 
         const avatarRef = await uploadBytes(uploadRef, file.image);
@@ -113,22 +136,17 @@ export default function AppContextProvider({ children }: Props): ReactElement {
         await updateProfile(auth.currentUser, {
           photoURL: image,
         });
-        alert("Profile image updated");
 
         // Reload the current user to fetch new profileUrl
         await auth.currentUser.reload();
       }
-    } catch (error) {
-      alert(error);
-    }
+    } catch (error) { }
   };
 
   const signOutUser = async () => {
     try {
       await signOut(auth);
-    } catch (error) {
-      alert(error);
-    }
+    } catch (error) { }
   };
 
   const handleAuthChange = async (params: { cb?: VoidFunction; err?: VoidFunction }) => {
@@ -147,9 +165,8 @@ export default function AppContextProvider({ children }: Props): ReactElement {
     });
   };
 
-  const addTodoItem = async (value: string) => {
+  const addSavedItem = async (params: { title: string; summary: string, url: string }) => {
     try {
-      // document reference to be added
       const docRef = doc(
         db,
         "todo",
@@ -159,71 +176,58 @@ export default function AppContextProvider({ children }: Props): ReactElement {
       if (userId !== null) {
         await setDoc(docRef, {
           userId: userId.uid,
-          value,
+          title: params.title,
+          summary: params.summary,
+          url: params.url
         });
-
-        alert(`Item ${value} added!`);
       }
-    } catch (error) {
-      alert(error);
-    }
+    } catch (error) { }
   };
 
-  const getTodoItems = async () => {
+  const getSavedItems = async () => {
     try {
       if (auth.currentUser !== null) {
         const userId = auth.currentUser.uid;
 
-        // query to get only the documents that matches logged in user id
         const q = query(collection(db, "todo"), where("userId", "==", userId));
         const querySnapshot = await getDocs(q);
 
-        // reset the todo items value
-        setTodoItems([]);
+        // reset the saved items value
+        setSavedItems([]);
 
-        // map through the query result and assign the value to the todoItems state
         querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          setTodoItems((prev) => [
+          const {title, summary, url} = doc.data();
+          setSavedItems((prev) => [
             ...prev,
             {
               itemId: doc.id,
-              value: data.value,
+              title,
+              summary,
+              url
             },
           ]);
         });
       }
-    } catch (error) {
-      alert(error);
-    }
+    } catch (error) { }
   };
 
-  const updateTodoItem = async (params: { newValue: string; id: string }) => {
+  const updateSavedItem = async (params: { id: string, newTitle: string; newSummary: string; newUrl: string }) => {
+    const { id, newTitle: title, newSummary: summary, newUrl: url } = params;
     try {
-      // reference to the document to update
-      const docRef = doc(db, "todo", params.id);
-
-      // Update the value of the todo item
+      const docRef = doc(db, "todo", id);
       await updateDoc(docRef, {
-        value: params.newValue,
+        title,
+        summary,
+        url
       });
-
-      alert(`Item updated!`);
-    } catch (error) {
-      alert(error);
-    }
+    } catch (error) { }
   };
 
-  const deleteTodoItem = async (id: string) => {
+  const deleteSavedItem = async (id: string) => {
     try {
-      // reference to the document to delete
       const docRef = doc(db, "todo", id);
       await deleteDoc(docRef);
-
-      alert(`item: ${id} deleted!`);
-    } catch (error) {
-      alert(error);
-    }
+    } catch (error) { }
   };
 
   return (
@@ -232,14 +236,15 @@ export default function AppContextProvider({ children }: Props): ReactElement {
         loading,
         currentUser,
         logInUser,
+        signInWithGoogle,
         registerUser,
         handleAuthChange,
         updateAvatar,
-        todoItems,
-        addTodoItem,
-        getTodoItems,
-        updateTodoItem,
-        deleteTodoItem,
+        savedItems,
+        addSavedItem,
+        getSavedItems,
+        updateSavedItem,
+        deleteSavedItem,
         signOutUser,
       }}
     >

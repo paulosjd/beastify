@@ -4,8 +4,8 @@ import { Link } from "react-router-dom";
 import { AppContext } from "../AppContext";
 import Button from "../components/Button";
 import Input from "../components/Input";
-import { Spacing, Wrapper } from "./Home";
 import { Form } from "./Login";
+import {Spacing, Wrapper} from "../components/StyledComponents";
 
 export default function Signup(): ReactElement {
   const history = useHistory();
