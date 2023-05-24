@@ -11,7 +11,7 @@ import {
 } from "@firebase/auth";
 import { FirebaseError } from "@firebase/app";
 import { ref, uploadBytes, getDownloadURL } from "@firebase/storage";
-import { query, where, collection, getDocs, doc, setDoc, deleteDoc, updateDoc } from "@firebase/firestore";
+import { query, where, collection, getDocs, doc, setDoc, deleteDoc, updateDoc, serverTimestamp } from "@firebase/firestore";
 import { auth, db, storage } from "./firebase";
 import { v4 as uuid } from "uuid";
 
@@ -129,7 +129,7 @@ export default function AppContextProvider({ children }: Props): ReactElement {
 
         const avatarRef = await uploadBytes(uploadRef, file.image);
 
-        // get the file url from firebase stoprage
+        // get the file url from firebase storage
         const image = await getDownloadURL(avatarRef.ref);
 
         // Update users photoURL
@@ -137,7 +137,6 @@ export default function AppContextProvider({ children }: Props): ReactElement {
           photoURL: image,
         });
 
-        // Reload the current user to fetch new profileUrl
         await auth.currentUser.reload();
       }
     } catch (error) { }
@@ -170,7 +169,7 @@ export default function AppContextProvider({ children }: Props): ReactElement {
       const docRef = doc(
         db,
         "todo",
-        uuid() /*unique id for new document, Note that firestore can do this for you if you leave the third parameter empty*/
+        uuid() /*unique id for new document, n.b.firestore can do this for you if you leave the third parameter empty*/
       );
       const userId = auth.currentUser;
       if (userId !== null) {
@@ -178,7 +177,8 @@ export default function AppContextProvider({ children }: Props): ReactElement {
           userId: userId.uid,
           title: params.title,
           summary: params.summary,
-          url: params.url
+          url: params.url,
+          created: serverTimestamp()
         });
       }
     } catch (error) { }

@@ -46,7 +46,6 @@ const AccountMenu = ({ avatar, handleImageChange, signOutUser }: AccountMenuProp
   const handleClose = () => {
     setAnchorEl(null);
   };
-  console.log(avatar)
   return (
     <React.Fragment>
       <Box sx={{ display: 'flex', alignItems: 'center', textAlign: 'center' }}>

@@ -11,7 +11,6 @@ const Button = styled.button`
   background-color: #7c6354;
   box-sizing: border-box;
   width: 100%;
-  min-height: 55px;
   &:disabled {
     background-color: #a5abaf;
   }

@@ -15,16 +15,13 @@ const Wrapper = styled.div`
   margin-top: 1px;
   border-bottom: 1px solid #ccc;
   padding-bottom: 10px;
+  text-align: left;
 `;
 
 export const Row = styled.div`
   width: 100%;
   display: flex;
   justify-content: space-between;
-`;
-
-const RowJustifiedContent = styled(Row)`
-    margin-bottom: 20px;
 `;
 
 const RowMargin = styled(Row)`
@@ -132,7 +129,7 @@ export default function SavedItem(
       {isView && itemUrl && (
         <RowMargin>
           <Link href={itemUrl} underline="hover" target="_blank" rel="noreferrer">
-            Button Link
+            Source
           </Link>
         </RowMargin>
       )}
