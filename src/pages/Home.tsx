@@ -79,7 +79,8 @@ export default function Home(): ReactElement {
     };
   }, []);
 
-  console.log(dayjs(new Date(2020, 2, 3)))
+  // console.log(dayjs(new Date(2020, 2, 3)))
+  console.log(filterParams)
   return (
     <Wrapper>
       {!!savedItems.length && (

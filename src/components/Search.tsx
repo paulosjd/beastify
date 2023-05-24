@@ -17,20 +17,33 @@ import Button from "./Button";
 
 const SearchWrapper = styled.div`
   border: 1px solid #A5ABAF;
+  border-radius: 3px;
   margin-bottom: 15px;
 `;
 
 const SearchButton = styled(Button)`
-  min-height: 45px;
+  width: 40%;
+  height: 42px;
+  background-color: #4761B8;
+  margin-left: 42px;
+  margin-top: 5px;
 `;
 
 const Row = styled.div`
   display: flex;
+`;
+
+const SearchRow = styled(Row)`
+  padding: 15px;
+`;
+
+const DateRow = styled(Row)`
   justify-content: space-between;
 `;
 
-const FirstRow = styled(Row)`
-  padding: 15px;
+
+const SearchInput = styled(Input)`
+  width: 281px;
 `;
 
 interface searchProps {
@@ -38,32 +51,34 @@ interface searchProps {
   setFilterParams: (params: filterParamsTypes) => void;
 }
 
-export default function Search({ filterParams }: searchProps): ReactElement {
+export default function Search({ filterParams, setFilterParams }: searchProps): ReactElement {
 
   const { startDate, endDate, keyword } = filterParams;
   const [itemTitle, setItemTitle] = useState<string>('');
   const { getSavedItems } = useContext(AppContext);
 
+  const handleInput = (param: string, value: string | Dayjs | null) => {
+    setFilterParams({
+      ...filterParams, [param]: value
+    });
+  }
+
   return (
     <SearchWrapper>
-      <FirstRow>
-        <Input
-          value={itemTitle}
-          name="title"
-          placeholder="Title"
-          onChange={({ target }) => setItemTitle(target.value)}
-          className={styles.keywordInput}
+      <SearchRow>
+        <SearchInput
+          value={keyword ? keyword : ''}
+          name="keyword"
+          placeholder="Keyword"
+          onChange={({ target }) => handleInput('keyword', target.value)}
         />
         <SearchButton
-          style={{ display: false ? 'none' : undefined }}
-          onClick={() => {
-            // getSavedItems
-          }}
+          onClick={async () => await getSavedItems()}
         >
-          Add Item
+          Search
         </SearchButton>
-      </FirstRow>
-      <Row>
+      </SearchRow>
+      <DateRow>
         <LocalizationProvider
           localeText={enUS.components.MuiLocalizationProvider.defaultProps.localeText}
           dateAdapter={AdapterDayjs}
@@ -71,14 +86,15 @@ export default function Search({ filterParams }: searchProps): ReactElement {
         >
           <DemoContainer components={['DatePicker', 'DatePicker']} sx={{mr: 2, mb: 2, ml: 2}}>
             <DatePicker
-              value={dayjs(new Date(2020, 2, 3))}
-              onChange={newValue => {console.log(newValue)}}
+              value={startDate}
+              onChange={(newValue: Dayjs | null) => handleInput('startDate', newValue)}
               format="DD/MM/YYYY"
               label="Start Date"
             />
             <DatePicker
-              value={dayjs(new Date(2020, 2, 3))}
-              onChange={newValue => {console.log(newValue)}}
+              // value={dayjs(new Date(2020, 2, 3))}
+              value={endDate}
+              onChange={(newValue: Dayjs | null) => handleInput('endDate', newValue)}
               format="DD/MM/YYYY"
               label="End Date"
             />
@@ -94,7 +110,7 @@ export default function Search({ filterParams }: searchProps): ReactElement {
         >
           <Clear />
         </IconButton>
-      </Row>
+      </DateRow>
     </SearchWrapper>
   );
 }

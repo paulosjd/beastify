@@ -8,7 +8,7 @@ const Button = styled.button`
   font-size: 16px;
   cursor: pointer;
   font-weight: 600;
-  background-color: #7c6354;
+  background-color: #B89E47;
   box-sizing: border-box;
   width: 100%;
   &:disabled {
