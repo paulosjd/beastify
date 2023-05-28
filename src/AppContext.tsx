@@ -1,4 +1,4 @@
-import React, { ReactElement } from "react";
+import React, { ReactElement, useState } from "react";
 import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
@@ -14,6 +14,7 @@ import { ref, uploadBytes, getDownloadURL } from "@firebase/storage";
 import { query, where, collection, getDocs, doc, setDoc, deleteDoc, updateDoc, serverTimestamp } from "@firebase/firestore";
 import { auth, db, storage } from "./firebase";
 import { v4 as uuid } from "uuid";
+import { Dayjs } from "dayjs";
 
 interface Props {
   children:
@@ -35,10 +36,17 @@ interface registrationTypes {
 }
 
 export interface savedItemInterface {
+  itemId: string;
   title: string;
   summary: string;
   url: string;
-  itemId: string;
+  keywords: string[];
+}
+
+export interface filterParamsTypes {
+  startDate:  Dayjs | null;
+  endDate:  Dayjs | null;
+  keyword:  string | null;
 }
 
 interface contextTypes {
@@ -50,10 +58,10 @@ interface contextTypes {
   registerUser(data: registrationTypes): Promise<void>;
   updateAvatar(file: { image: Blob; ext: string }): Promise<void>;
   signOutUser(): Promise<void>;
-  addSavedItem(params: { title: string; summary: string, url: string }): Promise<void>;
-  updateSavedItem(params: { newTitle: string; newSummary: string; newUrl: string; id: string }): Promise<void>;
+  addSavedItem(params: { title: string; summary: string, url: string, keywords: string[] }): Promise<void>;
+  updateSavedItem(params: { newTitle: string, newSummary: string, newUrl: string, newKeywords: string[], id: string }): Promise<void>;
   deleteSavedItem(id: string): Promise<void>;
-  getSavedItems(): Promise<void>;
+  getSavedItems(filterParams?: filterParamsTypes): Promise<void>;
   handleAuthChange: (params: { cb?: VoidFunction; err?: VoidFunction }) => void;
 }
 
@@ -76,9 +84,9 @@ const contextDefaultVal: contextTypes = {
 export const AppContext = React.createContext<contextTypes>(contextDefaultVal);
 
 export default function AppContextProvider({ children }: Props): ReactElement {
-  const [currentUser, setCurrentUser] = React.useState<userTypes | null>(null);
-  const [loading, setLoading] = React.useState(false);
-  const [savedItems, setSavedItems] = React.useState<savedItemInterface[]>([]);
+  const [currentUser, setCurrentUser] = useState<userTypes | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [savedItems, setSavedItems] = useState<savedItemInterface[]>([]);
 
   const logInUser = async (email: string, password: string) => {
     setLoading(true);
@@ -164,11 +172,11 @@ export default function AppContextProvider({ children }: Props): ReactElement {
     });
   };
 
-  const addSavedItem = async (params: { title: string; summary: string, url: string }) => {
+  const addSavedItem = async (params: { title: string; summary: string, url: string, keywords: string[] }) => {
     try {
       const docRef = doc(
         db,
-        "todo",
+        "article",
         uuid() /*unique id for new document, n.b.firestore can do this for you if you leave the third parameter empty*/
       );
       const userId = auth.currentUser;
@@ -178,54 +186,69 @@ export default function AppContextProvider({ children }: Props): ReactElement {
           title: params.title,
           summary: params.summary,
           url: params.url,
+          keywords: params.keywords,
           created: serverTimestamp()
         });
       }
     } catch (error) { }
   };
 
-  const getSavedItems = async () => {
+  const getSavedItems = async (filterParams?: filterParamsTypes) => {
     try {
       if (auth.currentUser !== null) {
         const userId = auth.currentUser.uid;
-
-        const q = query(collection(db, "todo"), where("userId", "==", userId));
+        let q
+        if (filterParams?.keyword) {
+          q = query(
+            collection(db, "article"),
+            where("userId", "==", userId),
+            where("keywords", "array-contains-any", [filterParams.keyword]));
+        } else {
+          q = query(
+            collection(db, "article"),
+            where("userId", "==", userId)
+          );
+        }
         const querySnapshot = await getDocs(q);
 
         // reset the saved items value
         setSavedItems([]);
 
         querySnapshot.forEach((doc) => {
-          const {title, summary, url} = doc.data();
+          const { title, summary, url, keywords } = doc.data();
           setSavedItems((prev) => [
             ...prev,
             {
               itemId: doc.id,
               title,
               summary,
-              url
+              url,
+              keywords
             },
           ]);
         });
       }
-    } catch (error) { }
+    } catch (error) { console.log(error) }
   };
 
-  const updateSavedItem = async (params: { id: string, newTitle: string; newSummary: string; newUrl: string }) => {
-    const { id, newTitle: title, newSummary: summary, newUrl: url } = params;
+  const updateSavedItem = async (
+    params: { id: string, newTitle: string; newSummary: string; newUrl: string, newKeywords: string[] }
+  ) => {
+    const { id, newTitle: title, newSummary: summary, newUrl: url, newKeywords: keywords } = params;
     try {
-      const docRef = doc(db, "todo", id);
+      const docRef = doc(db, "article", id);
       await updateDoc(docRef, {
         title,
         summary,
-        url
+        url,
+        keywords
       });
     } catch (error) { }
   };
 
   const deleteSavedItem = async (id: string) => {
     try {
-      const docRef = doc(db, "todo", id);
+      const docRef = doc(db, "article", id);
       await deleteDoc(docRef);
     } catch (error) { }
   };

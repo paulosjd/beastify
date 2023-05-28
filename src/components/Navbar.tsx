@@ -1,5 +1,5 @@
-import React, {ReactElement, useContext} from "react";
-import {useLocation, withRouter} from "react-router";
+import React, {ReactElement, useContext, useState, ChangeEvent, MouseEvent} from "react";
+import {withRouter} from "react-router";
 import {Link} from "react-router-dom";
 import styled from "styled-components";
 import Box from '@mui/material/Box';
@@ -11,7 +11,6 @@ import Typography from '@mui/material/Typography';
 import Settings from '@mui/icons-material/Settings';
 import Logout from '@mui/icons-material/Logout';
 import {Spacing} from "./StyledComponents";
-import Button from "./Button";
 import {AppContext} from "../AppContext";
 
 const NavbarStyle = styled.div`
@@ -32,14 +31,14 @@ const Avatar = styled.img`
 
 type AccountMenuProps = {
   avatar: string | null | undefined;
-  handleImageChange: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
-  signOutUser: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
+  handleImageChange: (e: ChangeEvent<HTMLInputElement>) => Promise<void>;
+  signOutUser: (e: ChangeEvent<HTMLInputElement>) => Promise<void>;
 }
 
 const AccountMenu = ({ avatar, handleImageChange, signOutUser }: AccountMenuProps): ReactElement => {
-  const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const open = Boolean(anchorEl);
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+  const handleClick = (event: MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => {
@@ -114,10 +113,9 @@ const AccountMenu = ({ avatar, handleImageChange, signOutUser }: AccountMenuProp
 }
 
 const NavBar = (): ReactElement => {
-  const location = useLocation();
   const { currentUser, signOutUser, updateAvatar } = useContext(AppContext);
 
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files !== null && e.target.files.length > 0) {
       const rawImage = e.target.files[0];
       // fetches the extension name of the image

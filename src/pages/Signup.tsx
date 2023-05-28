@@ -1,4 +1,4 @@
-import React, { ReactElement } from "react";
+import React, { ReactElement, useEffect, useState } from "react";
 import { useHistory } from "react-router";
 import { Link } from "react-router-dom";
 import { AppContext } from "../AppContext";
@@ -9,12 +9,12 @@ import {Spacing, Wrapper} from "../components/StyledComponents";
 
 export default function Signup(): ReactElement {
   const history = useHistory();
-  const [displayName, setDisplayName] = React.useState<string>("");
-  const [email, setEmail] = React.useState<string>("");
-  const [password, setPassword] = React.useState<string>("");
+  const [displayName, setDisplayName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const { registerUser, handleAuthChange, loading } = React.useContext(AppContext);
 
-  React.useEffect(() => {
+  useEffect(() => {
     handleAuthChange({
       cb: () => {
         history.push("/");

@@ -1,4 +1,4 @@
-import React, { ReactElement } from "react";
+import React, { ReactElement, useEffect, useState } from "react";
 import { useHistory } from "react-router";
 import { useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
@@ -20,11 +20,11 @@ type LocationState = {
 export default function Login(): ReactElement {
   const history = useHistory();
   const location = useLocation<LocationState>();
-  const [email, setEmail] = React.useState<string>("");
-  const [password, setPassword] = React.useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const { logInUser, signOutUser, signInWithGoogle, handleAuthChange, loading } = React.useContext(AppContext);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (location.state?.logout) {
       signOutUser();
     }

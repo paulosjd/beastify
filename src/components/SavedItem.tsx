@@ -28,7 +28,15 @@ const RowMargin = styled(Row)`
     margin-bottom: 20px;
 `;
 
-interface savedItemProps extends savedItemInterface {
+// interface savedItemProps extends savedItemInterface {
+//   editItemId: string;
+//   viewItemId: string;
+//   setViewItemId: (itemId: string) => void;
+//   setEditItemId: (itemId: string) => void;
+// }
+
+interface savedItemProps {
+  savedItem: savedItemInterface;
   editItemId: string;
   viewItemId: string;
   setViewItemId: (itemId: string) => void;
@@ -36,7 +44,8 @@ interface savedItemProps extends savedItemInterface {
 }
 
 export default function SavedItem(
-  { itemId, title, summary, url, editItemId, setEditItemId, viewItemId, setViewItemId }: savedItemProps
+  { savedItem: {itemId, title, summary, url, keywords}, editItemId, setEditItemId, viewItemId, setViewItemId }: savedItemProps
+  // { itemId, title, summary, url, editItemId, setEditItemId, viewItemId, setViewItemId }: savedItemProps
 ): ReactElement {
 
   const [itemTitle, setItemTitle] = useState<string>(title);
@@ -71,7 +80,13 @@ export default function SavedItem(
             <Button
               disabled={!itemTitle}
               onClick={() => {
-                updateSavedItem({id: itemId, newTitle: itemTitle, newSummary: itemSummary, newUrl: itemUrl});
+                updateSavedItem({
+                  id: itemId,
+                  newTitle: itemTitle,
+                  newSummary: itemSummary,
+                  newUrl: itemUrl,
+                  newKeywords: keywords
+                });
                 setEditItemId('');
               }}
             >

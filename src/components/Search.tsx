@@ -1,16 +1,16 @@
-import React, {ReactElement, useContext, useState} from "react";
+import React, { ReactElement, useContext, useState } from "react";
 import { DatePicker } from '@mui/x-date-pickers-pro';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs, { Dayjs } from 'dayjs';
+import { Dayjs } from 'dayjs';
 import 'dayjs/locale/de';
 import { enUS } from '@mui/x-date-pickers/locales';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import styled from "styled-components";
 import Input from "./Input";
-import {AppContext} from "../AppContext";
-import { filterParamsTypes } from "../pages/Home";
-import styles from "./styles.module.css";
+import { AppContext } from "../AppContext";
+import { filterParamsInitialState } from "../pages/Home";
+import { filterParamsTypes } from "../AppContext";
 import {IconButton} from "@mui/material";
 import Clear from "@mui/icons-material/Clear";
 import Button from "./Button";
@@ -41,7 +41,6 @@ const DateRow = styled(Row)`
   justify-content: space-between;
 `;
 
-
 const SearchInput = styled(Input)`
   width: 281px;
 `;
@@ -54,14 +53,26 @@ interface searchProps {
 export default function Search({ filterParams, setFilterParams }: searchProps): ReactElement {
 
   const { startDate, endDate, keyword } = filterParams;
-  const [itemTitle, setItemTitle] = useState<string>('');
   const { getSavedItems } = useContext(AppContext);
 
   const handleInput = (param: string, value: string | Dayjs | null) => {
+    let newFilterParams = { ...filterParams };
+    if (param === 'keyword') {
+      newFilterParams = { ...filterParamsInitialState };
+    } else {
+      newFilterParams.keyword = '';
+    }
     setFilterParams({
-      ...filterParams, [param]: value
+      ...newFilterParams, [param]: value
     });
-  }
+  };
+
+  const resetInput = () => {
+    setFilterParams(filterParamsInitialState);
+  };
+
+  const hasInvalidDate = !!((filterParams.startDate && !filterParams.startDate.isValid()) ||
+    (filterParams.endDate && !filterParams.endDate.isValid()));
 
   return (
     <SearchWrapper>
@@ -73,7 +84,8 @@ export default function Search({ filterParams, setFilterParams }: searchProps): 
           onChange={({ target }) => handleInput('keyword', target.value)}
         />
         <SearchButton
-          onClick={async () => await getSavedItems()}
+          onClick={async () => await getSavedItems(filterParams)}
+          disabled={!Object.values(filterParams).some(val => !!val) || hasInvalidDate}
         >
           Search
         </SearchButton>
@@ -92,7 +104,6 @@ export default function Search({ filterParams, setFilterParams }: searchProps): 
               label="Start Date"
             />
             <DatePicker
-              // value={dayjs(new Date(2020, 2, 3))}
               value={endDate}
               onChange={(newValue: Dayjs | null) => handleInput('endDate', newValue)}
               format="DD/MM/YYYY"
@@ -104,9 +115,7 @@ export default function Search({ filterParams, setFilterParams }: searchProps): 
           sx={{mr: 5, mt: 2, mb: 2}}
           component="label"
           style={{borderRadius: 0.5}}
-          onClick={() => {
-
-          }}
+          onClick={resetInput}
         >
           <Clear />
         </IconButton>
