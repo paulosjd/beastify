@@ -9,7 +9,6 @@ import ItemTags from "../components/ItemTags";
 import TextArea from "../components/TextArea";
 import SavedItem from "../components/SavedItem";
 import Search from "../components/Search";
-import { Form } from "./Login";
 import { Spacing, Wrapper } from "../components/StyledComponents";
 
 const SavedItemWrapper = styled.div`
@@ -23,6 +22,7 @@ const AddItemButton = styled(Button)`
 
 const AddItemWrapper = styled.div`
   margin-top: 25px;
+  margin-bottom: 10px;
   width: 100%
 `;
 
@@ -32,7 +32,7 @@ export const filterParamsInitialState = {
   keyword: null
 };
 
-export default function Home (): ReactElement {
+export default function Home(): ReactElement {
   const history = useHistory();
   const [isAdd, setIsAdd] = useState<boolean>(false);
   const [title, setTitle] = useState<string>("");
@@ -44,7 +44,7 @@ export default function Home (): ReactElement {
   const [filterParams, setFilterParams] = useState<filterParamsTypes>(filterParamsInitialState);
   const { addSavedItem, getSavedItems, savedItems, currentUser, handleAuthChange } = useContext(AppContext);
 
-  console.log(filterParams)
+  // console.log(filterParams)
 
   useEffect(() => {
     handleAuthChange({
@@ -97,14 +97,12 @@ export default function Home (): ReactElement {
           <SavedItem
             key={item.itemId}
             savedItem={item}
-            // itemId={item.itemId}
-            // title={item.title}
-            // summary={item.summary}
-            // url={item.url}
+            tags={tags}
             editItemId={editItemId}
             setEditItemId={setEditItemId}
             viewItemId={viewItemId}
             setViewItemId={setViewItemId}
+            setTags={setTags}
           />
         ))}
       </SavedItemWrapper>
@@ -138,6 +136,7 @@ export default function Home (): ReactElement {
               onChange={({ target }) => setUrl(target.value)}
             />
             <ItemTags
+              isEdit={isAdd}
               tags={tags}
               setTags={setTags}
             />

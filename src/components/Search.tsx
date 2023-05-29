@@ -24,7 +24,7 @@ const SearchWrapper = styled.div`
 const SearchButton = styled(Button)`
   width: 40%;
   height: 42px;
-  background-color: #4761B8;
+  background-color: #1976d2;
   margin-left: 42px;
   margin-top: 5px;
 `;

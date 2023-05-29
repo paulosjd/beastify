@@ -33,17 +33,25 @@ const Tag = ({ label, handleDelete }: TagsProps): ReactElement => {
 };
 
 interface ItemTagsProps {
+  isEdit?: boolean;
   tags: string[];
   setTags: (newTags: string[]) => void;
+  itemKeywords?: string[];
+  setItemKeywords?: (newTags: string[]) => void;
 }
 
-export default function ItemTags({ tags, setTags }: ItemTagsProps): ReactElement {
+export default function ItemTags({ isEdit, tags, setTags, itemKeywords, setItemKeywords }: ItemTagsProps): ReactElement {
   const [currentTag, setCurrentTag] = useState<string>('')
 
   const handleDelete = (value: string) => {
     const newTags = tags.filter((val: string) => val !== value);
     setTags(newTags);
+    if (isEdit && itemKeywords && setItemKeywords) {
+      const newItemKeywords = itemKeywords.filter((val: string) => val !== value);
+      setItemKeywords(newItemKeywords);
+    }
   };
+
   const addTag = () => {
     if (currentTag.length < 25 && tags.length < 5) {
       const newTags = Array.from(new Set([...tags, currentTag]));
@@ -54,28 +62,31 @@ export default function ItemTags({ tags, setTags }: ItemTagsProps): ReactElement
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <InputWraper >
-        <Input
-          name="currentTag"
-          type="text"
-          placeholder="Keywords"
-          value={currentTag}
-          maxLength={24}
-          onChange={({ target }) => setCurrentTag(target.value)}
-        />
-        <AddButton
-          onClick={addTag}
-          disabled={!currentTag}
-          style={!currentTag ? {backgroundColor: '#a5abaf'} : undefined}
-        >
-          Add keyword
-        </AddButton>
-      </InputWraper>
+      {isEdit && (
+        <InputWraper >
+          <Input
+            name="currentTag"
+            type="text"
+            placeholder="Keywords"
+            value={currentTag}
+            maxLength={24}
+            onChange={({ target }) => setCurrentTag(target.value)}
+          />
+          <AddButton
+            onClick={addTag}
+            disabled={!currentTag}
+            style={!currentTag ? {backgroundColor: '#a5abaf'} : undefined}
+          >
+            Add keyword
+          </AddButton>
+        </InputWraper>
+      )}
       <Box
         sx={{
           height: "100%",
           display: "flex",
           padding: "0.4rem",
+          paddingLeft: "0",
           margin: "0 0.5rem 0 0",
           color: "#1c8e1c",
         }}

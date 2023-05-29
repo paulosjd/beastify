@@ -198,6 +198,8 @@ export default function AppContextProvider({ children }: Props): ReactElement {
       if (auth.currentUser !== null) {
         const userId = auth.currentUser.uid;
         let q
+        console.log('filterParams?.startDate')
+        console.log(filterParams?.startDate)
         if (filterParams?.keyword) {
           q = query(
             collection(db, "article"),
