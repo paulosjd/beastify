@@ -14,17 +14,17 @@ import {Spacing} from "./StyledComponents";
 import {AppContext} from "../AppContext";
 
 const NavbarStyle = styled.div`
-  padding: 20px 20px;
+  padding: 5px 20px;
   background: #B89E47;
-  min-height: 50px;
+  min-height: 75px;
   text-align: center;
   color: #f8fcda;
   margin-bottom: 30px;
 `;
 
 const Avatar = styled.img`
-  width: 80px;
-  height: 80px;
+  width: 65px;
+  height: 65px;
   border-radius: 50%;
   cursor: pointer;
 `;

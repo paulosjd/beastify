@@ -5,9 +5,9 @@ import styled from "styled-components";
 import { AppContext, filterParamsTypes } from "../AppContext";
 import Button from "../components/Button";
 import Input from "../components/Input";
-import ItemTags from "../components/ItemTags";
+import ArticleTags from "../components/ArticleTags";
 import TextArea from "../components/TextArea";
-import SavedItem from "../components/SavedItem";
+import SavedArticle from "../components/SavedArticle";
 import Search from "../components/Search";
 import { Spacing, Wrapper } from "../components/StyledComponents";
 
@@ -42,9 +42,7 @@ export default function Home(): ReactElement {
   const [editItemId, setEditItemId] = useState<string>("");
   const [viewItemId, setViewItemId] = useState<string>("");
   const [filterParams, setFilterParams] = useState<filterParamsTypes>(filterParamsInitialState);
-  const { addSavedItem, getSavedItems, savedItems, currentUser, handleAuthChange } = useContext(AppContext);
-
-  // console.log(filterParams)
+  const { addArticle, getSavedArticles, savedArticles, currentUser, handleAuthChange } = useContext(AppContext);
 
   useEffect(() => {
     handleAuthChange({
@@ -56,7 +54,7 @@ export default function Home(): ReactElement {
   }, []);
 
   useEffect(() => {
-    getSavedItems();
+    getSavedArticles();
     // eslint-disable-next-line
   }, [currentUser]);
 
@@ -75,16 +73,14 @@ export default function Home(): ReactElement {
   }, []);
 
   const handleSubmit = async () => {
-    await addSavedItem({title, summary, url, keywords: tags});
+    await addArticle({title, summary, url, keywords: tags});
     setTitle("");
     setSummary("");
     setUrl("");
     setTags([]);
     setIsAdd(false);
-    await getSavedItems();
+    await getSavedArticles();
   }
-
-  // console.log(dayjs(new Date(2020, 2, 3)))
 
   return (
     <Wrapper>
@@ -93,8 +89,8 @@ export default function Home(): ReactElement {
           filterParams={filterParams}
           setFilterParams={setFilterParams}
         />
-        {savedItems.map((item) => (
-          <SavedItem
+        {savedArticles.map((item) => (
+          <SavedArticle
             key={item.itemId}
             savedItem={item}
             tags={tags}
@@ -135,7 +131,7 @@ export default function Home(): ReactElement {
               placeholder="Source URL"
               onChange={({ target }) => setUrl(target.value)}
             />
-            <ItemTags
+            <ArticleTags
               isEdit={isAdd}
               tags={tags}
               setTags={setTags}

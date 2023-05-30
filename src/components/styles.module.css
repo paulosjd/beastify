@@ -2,4 +2,5 @@
 .titleRowElem {
     margin: 10px 0 6px;
     cursor: pointer;
+    width: 80%;
 }

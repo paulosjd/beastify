@@ -9,7 +9,7 @@ import { AppContext, savedItemInterface } from "../AppContext";
 import { Spacing } from "./StyledComponents";
 import TextArea from "./TextArea";
 import styles from "./styles.module.css";
-import ItemTags from "./ItemTags";
+import ArticleTags from "./ArticleTags";
 
 const Wrapper = styled.div`
   width: 100%;
@@ -39,7 +39,7 @@ interface savedItemProps {
   setTags: (newTags: string[]) => void;
 }
 
-export default function SavedItem(props: savedItemProps): ReactElement {
+export default function SavedArticle(props: savedItemProps): ReactElement {
   const {
     savedItem: { itemId, title, summary, url, keywords }, tags, editItemId, setEditItemId, viewItemId, setViewItemId, setTags
   } = props;
@@ -47,7 +47,7 @@ export default function SavedItem(props: savedItemProps): ReactElement {
   const [itemSummary, setItemSummary] = useState<string>(summary);
   const [itemUrl, setItemUrl] = useState<string>(url);
   const [itemKeywords, setItemKeywords] = useState<string[]>(keywords);
-  const { getSavedItems, updateSavedItem, deleteSavedItem } = React.useContext(AppContext);
+  const { getSavedArticles, updateSavedArticle, deleteSavedArticle } = React.useContext(AppContext);
   const isView = viewItemId === itemId;
   const itemTags = Array.from(new Set(itemKeywords.concat(tags)));
 
@@ -72,7 +72,7 @@ export default function SavedItem(props: savedItemProps): ReactElement {
           placeholder="URL"
           onChange={({ target }) => setItemUrl(target.value)}
         />
-        <ItemTags
+        <ArticleTags
           isEdit
           tags={itemTags}
           setTags={setTags}
@@ -84,7 +84,7 @@ export default function SavedItem(props: savedItemProps): ReactElement {
             <Button
               disabled={!itemTitle}
               onClick={() => {
-                updateSavedItem({
+                updateSavedArticle({
                   id: itemId,
                   newTitle: itemTitle,
                   newSummary: itemSummary,
@@ -100,8 +100,8 @@ export default function SavedItem(props: savedItemProps): ReactElement {
           <Spacing fitContent mx="5px" my="5px">
             <Button
               onClick={async () => {
-                await deleteSavedItem(itemId);
-                await getSavedItems();
+                await deleteSavedArticle(itemId);
+                await getSavedArticles();
               }}
             >
               Delete
@@ -124,9 +124,18 @@ export default function SavedItem(props: savedItemProps): ReactElement {
   return (
     <Wrapper>
       <Row>
-        <h4 className={styles.titleRowElem} onClick={viewToggle}
-        >{itemTitle}</h4>
-        {(!itemSummary && !itemUrl) ? null : !isView ? (
+        <h4 className={styles.titleRowElem} onClick={viewToggle}>
+          {itemTitle}
+        </h4>
+        <Spacing fitContent my="5px" float="right">
+        {(!itemSummary && !itemUrl && itemKeywords.length === 0) ? (
+          <IconButton
+            disableRipple
+            sx={{ color:'#FFF' }}
+          >
+            <ExpandCircleDownIcon />
+          </IconButton>
+        ) : !isView ? (
           <IconButton
             color="primary"
             component="label"
@@ -143,6 +152,27 @@ export default function SavedItem(props: savedItemProps): ReactElement {
             <ArrowDropUpIcon />
           </IconButton>
         )}
+        </Spacing>
+        <Spacing fitContent my="5px" float="right">
+          <Button
+            onClick={() => {
+              setEditItemId(itemId);
+              setViewItemId('');
+            }}
+          >
+            Edit
+          </Button>
+        </Spacing>
+        <Spacing fitContent my="5px" float="right">
+          <Button
+            onClick={async () => {
+              await deleteSavedArticle(itemId);
+              await getSavedArticles();
+            }}
+          >
+            Delete
+          </Button>
+        </Spacing>
       </Row>
       {isView && itemSummary && (
         <Row>
@@ -157,32 +187,13 @@ export default function SavedItem(props: savedItemProps): ReactElement {
         </RowMargin>
       )}
       {isView && !!keywords.length && (
-        <ItemTags
+        <ArticleTags
           tags={itemTags}
           setTags={setTags}
         />
       )}
       <Row>
-        <Spacing fitContent my="5px">
-          <Button
-            onClick={() => {
-              setEditItemId(itemId);
-              setViewItemId('');
-            }}
-          >
-            Edit
-          </Button>
-        </Spacing>
-        <Spacing fitContent my="5px">
-          <Button
-            onClick={async () => {
-              await deleteSavedItem(itemId);
-              await getSavedItems();
-            }}
-          >
-            Delete
-          </Button>
-        </Spacing>
+
       </Row>
     </Wrapper>
   );

@@ -8,7 +8,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 
 const Wrapper = styled.div`
-  max-width: 720px;
+  max-width: 1320px;
   margin: auto;
   padding: 10px 20px;
 `;

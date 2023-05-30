@@ -52,32 +52,32 @@ export interface filterParamsTypes {
 interface contextTypes {
   loading: boolean;
   currentUser: userTypes | null;
-  savedItems: savedItemInterface[];
+  savedArticles: savedItemInterface[];
   logInUser(email: string, password: string): Promise<void>;
   signInWithGoogle(): any;  // FIXME
   registerUser(data: registrationTypes): Promise<void>;
   updateAvatar(file: { image: Blob; ext: string }): Promise<void>;
   signOutUser(): Promise<void>;
-  addSavedItem(params: { title: string; summary: string, url: string, keywords: string[] }): Promise<void>;
-  updateSavedItem(params: { newTitle: string, newSummary: string, newUrl: string, newKeywords: string[], id: string }): Promise<void>;
-  deleteSavedItem(id: string): Promise<void>;
-  getSavedItems(filterParams?: filterParamsTypes): Promise<void>;
+  addArticle(params: { title: string; summary: string, url: string, keywords: string[] }): Promise<void>;
+  updateSavedArticle(params: { newTitle: string, newSummary: string, newUrl: string, newKeywords: string[], id: string }): Promise<void>;
+  deleteSavedArticle(id: string): Promise<void>;
+  getSavedArticles(filterParams?: filterParamsTypes): Promise<void>;
   handleAuthChange: (params: { cb?: VoidFunction; err?: VoidFunction }) => void;
 }
 
 const contextDefaultVal: contextTypes = {
   loading: false,
   currentUser: null,
-  savedItems: [],
+  savedArticles: [],
   logInUser: async () => {},
   signInWithGoogle: async () => {},
   registerUser: async () => {},
   updateAvatar: async () => {},
   signOutUser: async () => {},
-  addSavedItem: async () => {},
-  updateSavedItem: async () => {},
-  deleteSavedItem: async () => {},
-  getSavedItems: async () => {},
+  addArticle: async () => {},
+  updateSavedArticle: async () => {},
+  deleteSavedArticle: async () => {},
+  getSavedArticles: async () => {},
   handleAuthChange: () => {},
 };
 
@@ -86,7 +86,7 @@ export const AppContext = React.createContext<contextTypes>(contextDefaultVal);
 export default function AppContextProvider({ children }: Props): ReactElement {
   const [currentUser, setCurrentUser] = useState<userTypes | null>(null);
   const [loading, setLoading] = useState(false);
-  const [savedItems, setSavedItems] = useState<savedItemInterface[]>([]);
+  const [savedArticles, setSavedArticles] = useState<savedItemInterface[]>([]);
 
   const logInUser = async (email: string, password: string) => {
     setLoading(true);
@@ -172,7 +172,7 @@ export default function AppContextProvider({ children }: Props): ReactElement {
     });
   };
 
-  const addSavedItem = async (params: { title: string; summary: string, url: string, keywords: string[] }) => {
+  const addArticle = async (params: { title: string; summary: string, url: string, keywords: string[] }) => {
     try {
       const docRef = doc(
         db,
@@ -193,18 +193,37 @@ export default function AppContextProvider({ children }: Props): ReactElement {
     } catch (error) { }
   };
 
-  const getSavedItems = async (filterParams?: filterParamsTypes) => {
+  const getSavedArticles = async (filterParams?: filterParamsTypes) => {
+    // TODO pagination
+    // pagination: https://firebase.google.com/docs/firestore/query-data/query-cursors
+    // count https://firebase.google.com/docs/firestore/query-data/aggregation-queries#use_the_count_aggregation
+
+
     try {
       if (auth.currentUser !== null) {
         const userId = auth.currentUser.uid;
         let q
-        console.log('filterParams?.startDate')
-        console.log(filterParams?.startDate)
         if (filterParams?.keyword) {
           q = query(
             collection(db, "article"),
             where("userId", "==", userId),
             where("keywords", "array-contains-any", [filterParams.keyword]));
+        } else if (filterParams?.startDate && filterParams?.endDate) {
+          q = query(
+            collection(db, "article"),
+            where("userId", "==", userId),
+            where('created', '>=', filterParams.startDate.toDate()),
+            where('created', '<', filterParams.endDate.toDate()));
+        } else if (filterParams?.startDate) {
+          q = query(
+            collection(db, "article"),
+            where("userId", "==", userId),
+            where('created', '>=', filterParams.startDate.toDate()));
+        } else if (filterParams?.endDate) {
+          q = query(
+            collection(db, "article"),
+            where("userId", "==", userId),
+            where('created', '<', filterParams.endDate.toDate()));
         } else {
           q = query(
             collection(db, "article"),
@@ -214,11 +233,11 @@ export default function AppContextProvider({ children }: Props): ReactElement {
         const querySnapshot = await getDocs(q);
 
         // reset the saved items value
-        setSavedItems([]);
+        setSavedArticles([]);
 
         querySnapshot.forEach((doc) => {
           const { title, summary, url, keywords } = doc.data();
-          setSavedItems((prev) => [
+          setSavedArticles((prev) => [
             ...prev,
             {
               itemId: doc.id,
@@ -233,7 +252,7 @@ export default function AppContextProvider({ children }: Props): ReactElement {
     } catch (error) { console.log(error) }
   };
 
-  const updateSavedItem = async (
+  const updateSavedArticle = async (
     params: { id: string, newTitle: string; newSummary: string; newUrl: string, newKeywords: string[] }
   ) => {
     const { id, newTitle: title, newSummary: summary, newUrl: url, newKeywords: keywords } = params;
@@ -248,7 +267,7 @@ export default function AppContextProvider({ children }: Props): ReactElement {
     } catch (error) { }
   };
 
-  const deleteSavedItem = async (id: string) => {
+  const deleteSavedArticle = async (id: string) => {
     try {
       const docRef = doc(db, "article", id);
       await deleteDoc(docRef);
@@ -265,11 +284,11 @@ export default function AppContextProvider({ children }: Props): ReactElement {
         registerUser,
         handleAuthChange,
         updateAvatar,
-        savedItems,
-        addSavedItem,
-        getSavedItems,
-        updateSavedItem,
-        deleteSavedItem,
+        savedArticles,
+        addArticle,
+        getSavedArticles,
+        updateSavedArticle,
+        deleteSavedArticle,
         signOutUser,
       }}
     >

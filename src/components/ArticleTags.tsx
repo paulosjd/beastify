@@ -40,7 +40,7 @@ interface ItemTagsProps {
   setItemKeywords?: (newTags: string[]) => void;
 }
 
-export default function ItemTags({ isEdit, tags, setTags, itemKeywords, setItemKeywords }: ItemTagsProps): ReactElement {
+export default function ArticleTags({ isEdit, tags, setTags, itemKeywords, setItemKeywords }: ItemTagsProps): ReactElement {
   const [currentTag, setCurrentTag] = useState<string>('')
 
   const handleDelete = (value: string) => {

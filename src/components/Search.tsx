@@ -16,33 +16,24 @@ import Clear from "@mui/icons-material/Clear";
 import Button from "./Button";
 
 const SearchWrapper = styled.div`
-  border: 1px solid #A5ABAF;
-  border-radius: 3px;
   margin-bottom: 15px;
 `;
 
 const SearchButton = styled(Button)`
-  width: 40%;
+  width: 120px;
   height: 42px;
   background-color: #1976d2;
-  margin-left: 42px;
-  margin-top: 5px;
+  margin: 15px;
 `;
 
 const Row = styled.div`
   display: flex;
 `;
 
-const SearchRow = styled(Row)`
-  padding: 15px;
-`;
-
-const DateRow = styled(Row)`
-  justify-content: space-between;
-`;
-
 const SearchInput = styled(Input)`
-  width: 281px;
+  width: 280px;
+  height: 48px;
+  margin-top: 8px;
 `;
 
 interface searchProps {
@@ -53,7 +44,7 @@ interface searchProps {
 export default function Search({ filterParams, setFilterParams }: searchProps): ReactElement {
 
   const { startDate, endDate, keyword } = filterParams;
-  const { getSavedItems } = useContext(AppContext);
+  const { getSavedArticles } = useContext(AppContext);
 
   const handleInput = (param: string, value: string | Dayjs | null) => {
     let newFilterParams = { ...filterParams };
@@ -76,27 +67,19 @@ export default function Search({ filterParams, setFilterParams }: searchProps): 
 
   return (
     <SearchWrapper>
-      <SearchRow>
+      <Row>
         <SearchInput
           value={keyword ? keyword : ''}
           name="keyword"
           placeholder="Keyword"
           onChange={({ target }) => handleInput('keyword', target.value)}
         />
-        <SearchButton
-          onClick={async () => await getSavedItems(filterParams)}
-          disabled={!Object.values(filterParams).some(val => !!val) || hasInvalidDate}
-        >
-          Search
-        </SearchButton>
-      </SearchRow>
-      <DateRow>
         <LocalizationProvider
           localeText={enUS.components.MuiLocalizationProvider.defaultProps.localeText}
           dateAdapter={AdapterDayjs}
           adapterLocale="en-gb"
         >
-          <DemoContainer components={['DatePicker', 'DatePicker']} sx={{mr: 2, mb: 2, ml: 2}}>
+          <DemoContainer components={['DatePicker', 'DatePicker']} sx={{mr: 2, ml: 2}}>
             <DatePicker
               value={startDate}
               onChange={(newValue: Dayjs | null) => handleInput('startDate', newValue)}
@@ -112,14 +95,20 @@ export default function Search({ filterParams, setFilterParams }: searchProps): 
           </DemoContainer>
         </LocalizationProvider>
         <IconButton
-          sx={{mr: 5, mt: 2, mb: 2}}
+          sx={{}}
           component="label"
           style={{borderRadius: 0.5}}
           onClick={resetInput}
         >
           <Clear />
         </IconButton>
-      </DateRow>
+        <SearchButton
+          onClick={async () => await getSavedArticles(filterParams)}
+          disabled={!Object.values(filterParams).some(val => !!val) || hasInvalidDate}
+        >
+          Search
+        </SearchButton>
+      </Row>
     </SearchWrapper>
   );
 }
