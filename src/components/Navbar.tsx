@@ -1,6 +1,6 @@
 import React, {ReactElement, useContext, useState, ChangeEvent, MouseEvent} from "react";
 import {withRouter} from "react-router";
-import {Link} from "react-router-dom";
+import {Link, useLocation} from "react-router-dom";
 import styled from "styled-components";
 import Box from '@mui/material/Box';
 import Menu from '@mui/material/Menu';
@@ -12,6 +12,7 @@ import Settings from '@mui/icons-material/Settings';
 import Logout from '@mui/icons-material/Logout';
 import {Spacing} from "./StyledComponents";
 import {AppContext} from "../AppContext";
+import Button from "./Button";
 
 const NavbarStyle = styled.div`
   padding: 5px 20px;
@@ -20,6 +21,7 @@ const NavbarStyle = styled.div`
   text-align: center;
   color: #f8fcda;
   margin-bottom: 30px;
+  width: 100%;
 `;
 
 const Avatar = styled.img`
@@ -44,9 +46,18 @@ const AccountMenu = ({ avatar, handleImageChange, signOutUser }: AccountMenuProp
   const handleClose = () => {
     setAnchorEl(null);
   };
+  const location = useLocation();
+  console.log(location.pathname);
+
+
   return (
     <React.Fragment>
       <Box sx={{ display: 'flex', alignItems: 'center', textAlign: 'center' }}>
+        {location.pathname !== '/home' && (
+          <Link to="/home" style={{ textDecoration: 'none', float: 'right' }}>
+            <Typography sx={{ minWidth: 100, color: '#f8fcda', float: 'right' }}>Home</Typography>
+          </Link>
+        )}
         <Typography sx={{ minWidth: 100 }}>Contact</Typography>
         <Typography sx={{ minWidth: 100 }}>Profile</Typography>
           <IconButton

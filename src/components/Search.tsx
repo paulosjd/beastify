@@ -9,7 +9,7 @@ import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import styled from "styled-components";
 import Input from "./Input";
 import { AppContext } from "../AppContext";
-import { filterParamsInitialState } from "../pages/Home";
+import { filterParamsInitialState } from "../pages/Articles";
 import { filterParamsTypes } from "../AppContext";
 import {IconButton} from "@mui/material";
 import Clear from "@mui/icons-material/Clear";
