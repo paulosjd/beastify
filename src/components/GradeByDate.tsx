@@ -14,14 +14,15 @@ type GradePyramidProps = {
   chartData: ChartDataItem[] | [];
 }
 
-export default function GradePyramid({ chartData }: GradePyramidProps): ReactElement {
-
+export default function GradeByDate({ chartData }: GradePyramidProps): ReactElement {
   const grades: Set<string> = new Set();
   chartData
     .forEach(item => Object.keys(item)
-    .filter(key => key !== 'date')
-    .forEach(gradeKey => grades.add(gradeKey))
-  );
+      .filter(key => key !== 'date')
+      .forEach(gradeKey => grades.add(gradeKey))
+    );
+
+  console.log(grades)
 
   return (
     <BarChart
