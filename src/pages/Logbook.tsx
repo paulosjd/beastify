@@ -2,6 +2,10 @@ import React, { ReactElement, useContext, useEffect, useState } from "react";
 import { useHistory } from "react-router";
 import useGoogleSheets from "use-google-sheets";
 import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 import CircularProgress from '@mui/material/CircularProgress';
 import styled from "styled-components";
 import { AppContext, filterParamsTypes } from "../AppContext";
@@ -12,7 +16,7 @@ import TextArea from "../components/TextArea";
 import GradePyramid from "../components/GradePyramid";
 import Search from "../components/Search";
 import { Spacing, Wrapper } from "../components/StyledComponents";
-import { groupByKey, monthToNumber, sortDateString } from "../helpers"
+import { groupByKey, monthToNumber, sortDateStrings } from "../helpers"
 import GradeByDate from "../components/GradeByDate";
 
 
@@ -49,23 +53,27 @@ type LogItem = {
   crag: string;
 }
 
+type Timeframe = 0 | 0.5 | 1 | 3 | 5 | 10
+
 export default function Logbook(): ReactElement {
   const [isAdd, setIsAdd] = useState<boolean>(false);
   const [title, setTitle] = useState<string>("");
-  const [summary, setSummary] = useState<string>("");
-  const [url, setUrl] = useState<string>("");
-  const [tags, setTags] = useState<string[]>([]);
-  const [editItemId, setEditItemId] = useState<string>("");
-  const [viewItemId, setViewItemId] = useState<string>("");
+
+  const [timeframe, setTimeframe] = useState<number>(1);
   const [climbType, setClimbType] = useState<string>('boulder');
   const [filterParams, setFilterParams] = useState<filterParamsTypes>(filterParamsInitialState);
   const { addArticle, getSavedArticles, savedArticles, currentUser } = useContext(AppContext);
 
+  const handleTimeframeChange = (value: number | string ) => {
+    if (typeof value === 'number') {
+      setTimeframe(value);
+    }
+  };
+
   const sheetsObj = {
     apiKey: process.env.REACT_APP_SHEETS_API_KEY || '',
     sheetId: process.env.REACT_APP_SHEET_ID || '',
-    // sheetsOptions: [{ id: 'Sheet1' }],  // optional
-  }
+  };
 
   const { data, loading, error } = useGoogleSheets(sheetsObj);
 
@@ -76,6 +84,7 @@ export default function Logbook(): ReactElement {
       </Wrapper>
     )
   }
+  console.log(error)
 
   // TODO loading symbol, suspense?
 
@@ -83,11 +92,7 @@ export default function Logbook(): ReactElement {
 
   // TODO filter by last 1, 5 years
 
-  // console.log('data:')
-  // console.log(data)
-  // console.log('loading:')
-  // console.log(loading)
-  // console.log('error:')
+
   // console.log(error)
   let logData: LogItem[];
   let chartData = [];
@@ -108,11 +113,11 @@ export default function Logbook(): ReactElement {
     crag: obj['Crag name']
   }))
 
-  logData = logData.filter((obj: LogItem) => !!obj.grade && !!obj.date)
+  logData = logData.filter((obj: LogItem) => !!obj.grade && !!obj.date);
   logData = logData.map((obj: LogItem): LogItem => ({
     ...obj,
     grade: obj.grade.split(' ')[0],
-    date: obj.date.replace('??', '01')
+    date: '01/'.concat(obj.date.split('/').slice(1,3).join('/'))
   }))
 
   let re: RegExp
@@ -121,7 +126,7 @@ export default function Logbook(): ReactElement {
   } else {
     re = /^F\d[abc]\+?$/;
   }
-  logData = logData.filter((obj: LogItem) => re.test(obj.grade))
+  logData = logData.filter((obj: LogItem) => re.test(obj.grade));
   const groupedData = groupByKey<LogItem>(logData, 'date');
 
   // TODO filter by last 1, 5 years  - just check e.g. parseInt('23') within range 18-23
@@ -134,25 +139,43 @@ export default function Logbook(): ReactElement {
     date: string;
   }
 
-  let dateKeys = sortDateString(Object.keys(groupedData).map(dt => {
-    const parts = dt.split('/')
+  const sortedDates = sortDateStrings(Object.keys(groupedData).map(dt => {
+    const parts = dt.split('/');
     if (parts.length === 3) {
       parts[1] = monthToNumber(parts[1]);
       if (parts[1]) {
-        return parts.join('/')
+        return parts.join('/');
       }
     }
     return ''
   }))
-
-  dateKeys = dateKeys.filter(dt => dt.length === 8).map(dt => {
-    return dt.slice(0, 2).concat('/', monthToNumber(dt.slice(3, 5), true), '/', dt.slice(6, 8))
+    .filter(dt => dt.length === 8).map(dt => {
+      return dt.slice(0, 2).concat('/', monthToNumber(dt.slice(3, 5), true), '/', dt.slice(6, 8));
   })
-  dateKeys = dateKeys.slice(Math.max(dateKeys.length - 10, 0))  // Get the last 10 items
+    .reverse();
+
+  let dateKeys: string[];
+  if (timeframe === 0) {
+    dateKeys = sortedDates;
+  } else {
+    dateKeys = [];
+    const now = new Date();
+    for (let dateStr of sortedDates) {
+      const dateParts = dateStr.split('/');
+      [dateParts[0], dateParts[1]] = [dateParts[1], dateParts[0]];
+      const date = new Date(dateParts.join('/'));
+      date.setMonth(date.getMonth() + (timeframe * 12));
+      if (date < now) {
+        break;
+      }
+      dateKeys.push(dateStr);
+    }
+  }
+  // dateKeys = dateKeys.slice(Math.max(dateKeys.length - 10, 0))  // Get the last 10 items
 
   // just display maxGrade on screen, no need for it on chart data
 
-  for (const date of dateKeys) {
+  for (const date of dateKeys.reverse()) {
     const chartItem: ChartDateItem = {
       date,
     }
@@ -171,37 +194,33 @@ export default function Logbook(): ReactElement {
         chartItem[logItem.grade] = 1;
       }
     }
-    chartData.push(chartItem)
+    chartData.push(chartItem);
   }
 
   console.log(chartData)
 
   // TODO func that makes grade range from min to max
-  // {
-  //   "date": "01/Sep/22",c
-  //   "f7A+": 1,
-  //   "f7A": 2,
-  //   "f6C": 4,
-  //   "f6C+": 2
-  // }
-
-
-
-  const data2 = [
-    {
-      date: 'Page E',
-      uv: 1890,
-      pv: 4800,
-    },
-    {
-      date: 'Page F',
-      uv: 2390,
-    }
-  ];
 
 
   return (
     <Wrapper>
+      <FormControl>
+        <InputLabel id="demo-simple-select-label">Timeframe</InputLabel>
+        <Select
+          labelId="demo-simple-select-label"
+          id="demo-simple-select"
+          value={timeframe}
+          label="Timeframe"
+          onChange={({ target }) => handleTimeframeChange(target.value)}
+        >
+          <MenuItem value={0.5}>6 Months</MenuItem>
+          <MenuItem value={1}>1 year</MenuItem>
+          <MenuItem value={3}>3 years</MenuItem>
+          <MenuItem value={5}>5 years</MenuItem>
+          <MenuItem value={10}>10 years</MenuItem>
+          <MenuItem value={0}>All</MenuItem>
+        </Select>
+      </FormControl>
       <GradeByDate
         chartData={chartData}
       />

@@ -1,7 +1,7 @@
 import React, { ReactElement, useState } from "react";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Legend, Tooltip, XAxis, YAxis } from "recharts";
 import styled from "styled-components";
-import {monthToNumber} from "../helpers";
+import { getColorForIndex } from "../helpers";
 
 
 type DateItem = {
@@ -24,6 +24,8 @@ export default function GradeByDate({ chartData }: GradePyramidProps): ReactElem
 
   console.log(grades)
 
+  // TODO dyanimcally generate fill and add legend
+
   return (
     <BarChart
       width={1000}
@@ -39,9 +41,17 @@ export default function GradeByDate({ chartData }: GradePyramidProps): ReactElem
       <CartesianGrid strokeDasharray="3 3" />
       <XAxis dataKey="date" />
       <YAxis />
-      { Array.from(grades).map(item => (<Bar key={item} dataKey={item} fill="#8884d8" />))
-
-      }
+      <Tooltip />
+      <Legend />
+      {Array.from(grades)
+        .sort((a: string, b: string) => a > b ? 1 : a === b ? 0 : -1)
+        .map((item, ind) => (
+          <Bar
+            key={item}
+            dataKey={item}
+            fill={getColorForIndex(ind)}
+          />
+        )) }
 
 
 
