@@ -20,7 +20,6 @@ const NavbarStyle = styled.div`
   min-height: 75px;
   text-align: center;
   color: #f8fcda;
-  margin-bottom: 30px;
   width: 100%;
 `;
 
@@ -56,7 +55,6 @@ const AccountMenu = ({ avatar, handleImageChange, signOutUser }: AccountMenuProp
             <Typography sx={{ minWidth: 100, color: '#f8fcda', float: 'right' }}>Home</Typography>
           </Link>
         )}
-        <Typography sx={{ minWidth: 100 }}>Contact</Typography>
         <Typography sx={{ minWidth: 100 }}>Profile</Typography>
           <IconButton
             onClick={handleClick}

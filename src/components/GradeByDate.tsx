@@ -1,8 +1,6 @@
 import React, { ReactElement, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Legend, Tooltip, XAxis, YAxis } from "recharts";
-import styled from "styled-components";
 import { getColorForIndex } from "../helpers";
-
 
 type DateItem = {
   date: string;
@@ -12,9 +10,11 @@ type ChartDataItem = DateItem | Record<string, number>;
 
 type GradePyramidProps = {
   chartData: ChartDataItem[] | [];
+  setSelectedDate: (dt: string) => void;
 }
 
-export default function GradeByDate({ chartData }: GradePyramidProps): ReactElement {
+export default function GradeByDate({ chartData, setSelectedDate }: GradePyramidProps): ReactElement {
+
   const grades: Set<string> = new Set();
   chartData
     .forEach(item => Object.keys(item)
@@ -22,21 +22,19 @@ export default function GradeByDate({ chartData }: GradePyramidProps): ReactElem
       .forEach(gradeKey => grades.add(gradeKey))
     );
 
-  console.log(grades)
-
-  // TODO dyanimcally generate fill and add legend
+  const handleChartClick = (activeLabel: string | undefined) => {
+    if (typeof activeLabel === 'string') {
+      setSelectedDate(activeLabel);
+    }
+  }
 
   return (
     <BarChart
-      width={1000}
-      height={600}
+      width={chartData.length > 10 ? 1200 : 800}
+      height={500}
       data={chartData}
-      margin={{
-        top: 5,
-        right: 30,
-        left: 20,
-        bottom: 5,
-      }}
+      onClick={({activeLabel}) => handleChartClick(activeLabel)}
+      margin={{ right: 35, top: 8 }}
     >
       <CartesianGrid strokeDasharray="3 3" />
       <XAxis dataKey="date" />
@@ -52,9 +50,6 @@ export default function GradeByDate({ chartData }: GradePyramidProps): ReactElem
             fill={getColorForIndex(ind)}
           />
         )) }
-
-
-
     </BarChart>
   );
 }

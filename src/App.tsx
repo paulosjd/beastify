@@ -9,7 +9,7 @@ import Logbook from "./pages/Logbook";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 
-const Wrapper = styled.div`
+const AppWrapper = styled.div`
   max-width: 1420px;
   margin: auto;
   padding: 10px 20px;
@@ -19,7 +19,7 @@ function App() {
   return (
     <BrowserRouter>
       <Navbar />
-      <Wrapper>
+      <AppWrapper>
         <Switch>
           <Route exact path="/home" component={Home} />
           <Route exact path="/articles" component={Articles} />
@@ -28,7 +28,7 @@ function App() {
           <Route exact path="/register" component={Signup} />
           <Redirect path="*" to="/home" />
         </Switch>
-      </Wrapper>
+      </AppWrapper>
     </BrowserRouter>
   );
 }

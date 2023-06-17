@@ -8,6 +8,10 @@ import Button from "../components/Button";
 import { Box } from "@mui/material";
 import { Spacing, Wrapper } from "../components/StyledComponents";
 
+const HomeWrapper = styled(Wrapper)`
+  margin-top: 30px;
+`;
+
 interface sheetsParams {
   apiKey: string;
   sheetId: string;
@@ -47,7 +51,7 @@ export default function Home(): ReactElement {
 
 
   return (
-    <Wrapper>
+    <HomeWrapper>
       <Box component="span" sx={{ p: 4, border: '1px solid #1976d2', borderRadius: 3 }}>
         <Link to="/articles">
           <Button>Articles</Button>
@@ -58,6 +62,6 @@ export default function Home(): ReactElement {
           <Button>Logbook</Button>
         </Link>
       </Box>
-    </Wrapper>
+    </HomeWrapper>
   )
 }
