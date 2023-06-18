@@ -32,23 +32,7 @@ export default function Home(): ReactElement {
     // eslint-disable-next-line
   }, []);
 
-  //   const auth = await google.auth.getClient({ scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'] });
-  //
-  //   const sheets = google.sheets({ version: 'v4', auth });
-  //
-  //   const range = `Sheet1!A${id}:C${id}`;
-  //
-  //   const response = await sheets.spreadsheets.values.get({
-  //     spreadsheetId: ,
-  //     range,
-  //   });
-  //
-  //   // Result
-  //   if (response && response.data && response.data.values) {
-  //     const [title, content] = response.data.values[0];
-  //     console.log(title, content)
-  //
-
+  // TODO projects ??
 
   return (
     <HomeWrapper>

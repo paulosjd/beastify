@@ -1,49 +1,38 @@
-import React, { ReactElement, useState } from "react";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import styled from "styled-components";
-import {monthToNumber} from "../helpers";
-
-
-type DateItem = {
-  date: string;
-}
-
-type ChartDataItem = DateItem | Record<string, number>;
+import React, { ReactElement } from "react";
+import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from "recharts";
+import { getColorForIndex } from "../helpers";
 
 type GradePyramidProps = {
-  chartData: ChartDataItem[] | [];
-}
+  chartData: Record<string, number | string>[];
+  setSelectedGrade: (grade: string) => void;
+};
 
-export default function GradePyramid({ chartData }: GradePyramidProps): ReactElement {
+const GradePyramid = ({ chartData, setSelectedGrade }: GradePyramidProps): ReactElement => {
 
-  const grades: Set<string> = new Set();
-  chartData
-    .forEach(item => Object.keys(item)
-    .filter(key => key !== 'date')
-    .forEach(gradeKey => grades.add(gradeKey))
-  );
+  const handleChartClick = (activeLabel: string | undefined) => {
+    if (typeof activeLabel === 'string') {
+      setSelectedGrade(activeLabel);
+    }
+  }
 
   return (
     <BarChart
-      width={1000}
-      height={600}
+      width={chartData.length > 10 ? 1200 : 800}
+      height={500}
       data={chartData}
-      margin={{
-        top: 5,
-        right: 30,
-        left: 20,
-        bottom: 5,
-      }}
+      onClick={({activeLabel}) => handleChartClick(activeLabel)}
+      margin={{ right: 35, top: 8 }}
     >
       <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="date" />
+      <XAxis dataKey="grade" />
       <YAxis />
-      { Array.from(grades).map(item => (<Bar key={item} dataKey={item} fill="#8884d8" />))
-
-      }
-
-
-
+      <Tooltip />
+      <Bar
+        dataKey={'count'}
+        fill={getColorForIndex(1)}
+      />
     </BarChart>
   );
-}
+};
+
+export default GradePyramid;

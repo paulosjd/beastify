@@ -1,17 +1,17 @@
-import React, { ReactElement, useState } from "react";
+import React, { ReactElement } from "react";
 import { Bar, BarChart, CartesianGrid, Legend, Tooltip, XAxis, YAxis } from "recharts";
 import { getColorForIndex } from "../helpers";
 
 type DateItem = {
   date: string;
-}
+};
 
 type ChartDataItem = DateItem | Record<string, number>;
 
 type GradePyramidProps = {
   chartData: ChartDataItem[] | [];
   setSelectedDate: (dt: string) => void;
-}
+};
 
 export default function GradeByDate({ chartData, setSelectedDate }: GradePyramidProps): ReactElement {
 
@@ -49,7 +49,7 @@ export default function GradeByDate({ chartData, setSelectedDate }: GradePyramid
             dataKey={item}
             fill={getColorForIndex(ind)}
           />
-        )) }
+        ))}
     </BarChart>
   );
-}
+};

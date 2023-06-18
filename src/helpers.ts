@@ -1,7 +1,13 @@
 export const groupByKey = <T extends Record<string, string>,>(arr: T[], key: string) => arr
-  .reduce((acc: Record<string, T[]>, obj: T) => ({
+  .reduce((acc: Record<string, T[]>, obj) => ({
     ...acc,
     [obj[key]]:( acc[obj[key]] || [] ).concat(obj)
+  }), {});
+
+export const countForKey = (arr: Record<string, string>[], key: string) => arr
+  .reduce((acc: Record<string, number>, obj) => ({
+    ...acc,
+    [obj[key]]: ( acc[obj[key]] || 0 ) + 1
   }), {});
 
 export const monthToNumber = (month: string, reverse: boolean = false): string => {

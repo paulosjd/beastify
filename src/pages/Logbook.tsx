@@ -9,10 +9,11 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { Wrapper } from "../components/StyledComponents";
-import { groupByKey, monthToNumber, sortDateStrings } from "../helpers"
+import { countForKey, groupByKey, monthToNumber, sortDateStrings } from "../helpers"
 import GradeByDate from "../components/GradeByDate"
 import LogbookOptions from "../components/LogbookOptions";
 import styled from "styled-components";
+import GradePyramid from "../components/GradePyramid";
 
 const LogbookWrapper = styled(Wrapper)`
   margin-top: 15px;
@@ -32,8 +33,14 @@ type LogItem = {
   crag: string;
 }
 
+type PyramidItem = {
+  grade: string;
+  count: number;
+};
+
 const Logbook = (): ReactElement => {
-  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState<string>('');
+  const [selectedGrade, setSelectedGrade] = useState<string>('');
   const [timeframe, setTimeframe] = useState<number>(1);
   const [climbType, setClimbType] = useState<string>('boulder');
   const [chartType, setChartType] = useState<string>('date');
@@ -65,7 +72,6 @@ const Logbook = (): ReactElement => {
   }
 
   let logData: LogItem[];
-  let chartData = [];
 
   const logbookOptions = (
     <LogbookOptions
@@ -97,6 +103,11 @@ const Logbook = (): ReactElement => {
     crag: obj['Crag name']
   }));
 
+  // TODO make unique id's from logitem - name/date/crag_ind ?? to use as key prop and as way of making request to update sheets (api request)
+  // - for add e.g. notes or edit item ?
+  // way to add to logbook ? ie can start with blank logbook/sheet not from ukc
+
+
   logData = logData.filter((obj: LogItem) => !!obj.grade && !!obj.date);
   logData = logData.map((obj: LogItem): LogItem => ({
     ...obj,
@@ -123,7 +134,7 @@ const Logbook = (): ReactElement => {
     date: string;
   }
 
-  const sortedDates = sortDateStrings(Object.keys(groupedData).map(dt => {
+  const dates = Object.keys(groupedData).map(dt => {
     const parts = dt.split('/');
     if (parts.length === 3) {
       parts[1] = monthToNumber(parts[1]);
@@ -132,10 +143,12 @@ const Logbook = (): ReactElement => {
       }
     }
     return '';
-  }))
+  });
+
+  const sortedDates = sortDateStrings(dates)
     .filter(dt => dt.length === 8).map(dt => {
       return dt.slice(0, 2).concat('/', monthToNumber(dt.slice(3, 5), true), '/', dt.slice(6, 8));
-  })
+    })
     .reverse();
 
   let dateKeys: string[];
@@ -156,6 +169,56 @@ const Logbook = (): ReactElement => {
     }
   }
 
+  if (chartType === 'pyramid') {
+    let chartData: PyramidItem[] = [];
+    const itemsInDate = logData.filter(item => dateKeys.includes(item.date));
+    const gradeCounts = countForKey(itemsInDate, 'grade');
+    for (const [grade, count] of Object.entries(gradeCounts)) {
+      chartData.push({ grade, count });
+      chartData = chartData.sort(
+        (a, b) => a.grade > b.grade ? 1 : a.grade === b.grade ? 0 : -1
+      )
+    }
+    let gradeItems: LogItem[] | undefined;
+    if (selectedGrade) {
+      const itemsByGrade = groupByKey<LogItem>(itemsInDate, 'grade');
+      gradeItems = itemsByGrade[selectedGrade]
+    }
+
+    return (
+      <LogbookWrapper>
+        {logbookOptions}
+        <GradePyramid
+            chartData={chartData}
+            setSelectedGrade={setSelectedGrade}
+        />
+        {gradeItems  && (
+          <TableContainer component={Paper} sx={{ maxWidth: 1200, mt: 2 }} >
+            <Table>
+              <TableHead>
+                <TableRow>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {gradeItems.map((row) => (
+                  <TableRow
+                    key={row.route}
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  >
+                    <TableCell>{row.route}</TableCell>
+                    <TableCell sx={{textAlign: 'left'}}>{row.grade}</TableCell>
+                    <TableCell align="right">{row.crag}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+      </LogbookWrapper>
+    )
+  }
+
+  const chartData = [];
   for (const date of dateKeys.reverse()) {
     const chartItem: ChartDateItem = {
       date,
@@ -179,16 +242,12 @@ const Logbook = (): ReactElement => {
   return (
     <LogbookWrapper>
       {logbookOptions}
-      {chartType === 'pyramid' ? (
-          <h1>pyramid chart</h1>
-        ): (
-          <GradeByDate
-            chartData={chartData}
-            setSelectedDate={setSelectedDate}
-          />
-      )}
+      <GradeByDate
+        chartData={chartData}
+        setSelectedDate={setSelectedDate}
+      />
       {selectedLogItems && (
-        <TableContainer component={Paper} sx={{ maxWidth: 1200 }} >
+        <TableContainer component={Paper} sx={{ maxWidth: 1200, mt: 2 }} >
           <Table>
             <TableHead>
               <TableRow>
