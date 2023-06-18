@@ -1,10 +1,6 @@
-import React, { ReactElement, useContext, useState } from "react";
+import React, { ReactElement, useState } from "react";
 import useGoogleSheets from "use-google-sheets";
 import CircularProgress from '@mui/material/CircularProgress';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -12,16 +8,20 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { Wrapper } from "../components/StyledComponents";
 import { groupByKey, monthToNumber, sortDateStrings } from "../helpers"
-import GradeByDate from "../components/GradeByDate";
-import NoData from "../components/NoData";
+import GradeByDate from "../components/GradeByDate"
+import LogbookOptions from "../components/LogbookOptions";
 import styled from "styled-components";
 
 const LogbookWrapper = styled(Wrapper)`
   margin-top: 15px;
+`;
+
+const NoDataParagraph = styled.p`
+  font-size: 20px;
+  color: #1E2828FF;
+  margin-top: 40px;
 `;
 
 type LogItem = {
@@ -32,7 +32,7 @@ type LogItem = {
   crag: string;
 }
 
-export default function Logbook(): ReactElement {
+const Logbook = (): ReactElement => {
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [timeframe, setTimeframe] = useState<number>(1);
   const [climbType, setClimbType] = useState<string>('boulder');
@@ -43,6 +43,11 @@ export default function Logbook(): ReactElement {
       setTimeframe(value);
     }
   };
+
+  const handleChartTypeChange = (target: HTMLButtonElement) => {
+    setChartType(target.value);
+    setSelectedDate('');
+  }
 
   const sheetsObj = {
     apiKey: process.env.REACT_APP_SHEETS_API_KEY || '',
@@ -62,9 +67,27 @@ export default function Logbook(): ReactElement {
   let logData: LogItem[];
   let chartData = [];
 
+  const logbookOptions = (
+    <LogbookOptions
+      timeframe={timeframe}
+      handleTimeframeChange={handleTimeframeChange}
+      climbType={climbType}
+      setClimbType={setClimbType}
+      chartType={chartType}
+      handleChartTypeChange={handleChartTypeChange}
+    />
+  );
+
+  const noData = (
+    <LogbookWrapper>
+      {logbookOptions}
+      <NoDataParagraph>No data available</NoDataParagraph>
+    </LogbookWrapper>
+  );
+
   const sheetData = !!data.length && data[0].data ? data[0].data : [];
   if (!sheetData.length) {
-    return <NoData wrapper={LogbookWrapper} />;
+    return noData;
   }
 
   logData = sheetData.map((obj: Record<string,any>): LogItem => ({
@@ -72,14 +95,14 @@ export default function Logbook(): ReactElement {
     grade: obj['Grade'],
     date: obj['Date'],
     crag: obj['Crag name']
-  }))
+  }));
 
   logData = logData.filter((obj: LogItem) => !!obj.grade && !!obj.date);
   logData = logData.map((obj: LogItem): LogItem => ({
     ...obj,
     grade: obj.grade.split(' ')[0],
     date: '01/'.concat(obj.date.split('/').slice(1,3).join('/'))
-  }))
+  }));
 
   let re: RegExp
   if (climbType === 'boulder') {
@@ -108,7 +131,7 @@ export default function Logbook(): ReactElement {
         return parts.join('/');
       }
     }
-    return ''
+    return '';
   }))
     .filter(dt => dt.length === 8).map(dt => {
       return dt.slice(0, 2).concat('/', monthToNumber(dt.slice(3, 5), true), '/', dt.slice(6, 8));
@@ -150,56 +173,12 @@ export default function Logbook(): ReactElement {
   }
 
   if (!chartData.length) {
-    return <NoData wrapper={LogbookWrapper} />;
-  }
-
-  const handleChartTypeChange = (target: HTMLButtonElement) => {
-    setChartType(target.value);
-    setSelectedDate('');
+    return noData;
   }
 
   return (
     <LogbookWrapper>
-      <div>
-        <FormControl>
-          <InputLabel>Timeframe</InputLabel>
-          <Select
-            sx={{mx: 1, minWidth: '120px'}}
-            value={timeframe}
-            label="Timeframe"
-            onChange={({ target }) => handleTimeframeChange(target.value)}
-          >
-            <MenuItem value={0.5}>6 Months</MenuItem>
-            <MenuItem value={1}>1 year</MenuItem>
-            <MenuItem value={3}>3 years</MenuItem>
-            <MenuItem value={5}>5 years</MenuItem>
-            <MenuItem value={10}>10 years</MenuItem>
-            <MenuItem value={0}>All</MenuItem>
-          </Select>
-        </FormControl>
-        <FormControl>
-          <InputLabel>Style</InputLabel>
-          <Select
-            sx={{mx: 1, minWidth: '120px'}}
-            value={climbType}
-            label="Style"
-            onChange={({ target }) => setClimbType(target.value.toString())}
-          >
-            <MenuItem value={'boulder'}>Boulder</MenuItem>
-            <MenuItem value={'sport'}>Sport climbing</MenuItem>
-          </Select>
-        </FormControl>
-        <ToggleButtonGroup
-          color="primary"
-          value={chartType}
-          exclusive
-          onChange={({ target }) => handleChartTypeChange(target as HTMLButtonElement)}
-          sx={{ ml:1, height: '56px' }}
-        >
-          <ToggleButton value="date">Date series</ToggleButton>
-          <ToggleButton value="pyramid">Pyramid</ToggleButton>
-        </ToggleButtonGroup>
-      </div>
+      {logbookOptions}
       {chartType === 'pyramid' ? (
           <h1>pyramid chart</h1>
         ): (
@@ -233,3 +212,5 @@ export default function Logbook(): ReactElement {
     </LogbookWrapper>
   )
 }
+
+export default Logbook;
