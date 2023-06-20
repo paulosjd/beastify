@@ -1,3 +1,5 @@
+import { LogItem } from "./types";
+
 export const groupByKey = <T extends Record<string, string>,>(arr: T[], key: string) => arr
   .reduce((acc: Record<string, T[]>, obj) => ({
     ...acc,
@@ -40,4 +42,12 @@ export const getColorForIndex = (ind: number): string => {
     color = colors[Math.floor(Math.random() * colors.length)];
   }
   return color;
+};
+
+export const getLogitemId = (logItem: LogItem) => {
+  const { route, crag, date } = logItem;
+  return `${route}_${crag}_${date}`
+    .toLowerCase()
+    .replace(/\s/g, '_')
+    .replace(/\W/g, '');
 };

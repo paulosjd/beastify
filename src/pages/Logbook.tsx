@@ -1,19 +1,14 @@
 import React, { ReactElement, useState } from "react";
 import useGoogleSheets from "use-google-sheets";
 import CircularProgress from '@mui/material/CircularProgress';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
 import { Wrapper } from "../components/StyledComponents";
-import { countForKey, groupByKey, monthToNumber, sortDateStrings } from "../helpers"
+import { countForKey, getLogitemId, groupByKey, monthToNumber, sortDateStrings } from "../lib/helpers"
+import { LogItem } from "../lib/types"
 import GradeByDate from "../components/GradeByDate"
 import LogbookOptions from "../components/LogbookOptions";
 import styled from "styled-components";
 import GradePyramid from "../components/GradePyramid";
+import RoutesTable from "../components/RoutesTable";
 
 const LogbookWrapper = styled(Wrapper)`
   margin-top: 15px;
@@ -24,14 +19,6 @@ const NoDataParagraph = styled.p`
   color: #1E2828FF;
   margin-top: 40px;
 `;
-
-type LogItem = {
-  [key: string]: string;
-  route: string;
-  grade: string;
-  date: string;
-  crag: string;
-}
 
 type PyramidItem = {
   grade: string;
@@ -97,6 +84,7 @@ const Logbook = (): ReactElement => {
   }
 
   logData = sheetData.map((obj: Record<string,any>): LogItem => ({
+    id: '',
     route: obj['Climb name'],
     grade: obj['Grade'],
     date: obj['Date'],
@@ -114,6 +102,22 @@ const Logbook = (): ReactElement => {
     grade: obj.grade.split(' ')[0],
     date: '01/'.concat(obj.date.split('/').slice(1,3).join('/'))
   }));
+
+  const logitemIds: string[] = [];
+  logData = logData.map((obj: LogItem): LogItem => {
+    const id = getLogitemId(obj);
+    logitemIds.push(id)
+    return { ...obj, id  }
+  });
+  console.log(logData)
+
+  // Remove any duplicates
+  logData = logData.filter((item, index, itemArray) => {
+    return index === itemArray.findIndex(
+      (t) => t.id === item.id)
+  })
+
+  console.log(logData)
 
   let re: RegExp
   if (climbType === 'boulder') {
@@ -192,28 +196,7 @@ const Logbook = (): ReactElement => {
             chartData={chartData}
             setSelectedGrade={setSelectedGrade}
         />
-        {gradeItems  && (
-          <TableContainer component={Paper} sx={{ maxWidth: 1200, mt: 2 }} >
-            <Table>
-              <TableHead>
-                <TableRow>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {gradeItems.map((row) => (
-                  <TableRow
-                    key={row.route}
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                  >
-                    <TableCell>{row.route}</TableCell>
-                    <TableCell sx={{textAlign: 'left'}}>{row.grade}</TableCell>
-                    <TableCell align="right">{row.crag}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
+        {gradeItems && <RoutesTable tableData={gradeItems}/>}
       </LogbookWrapper>
     )
   }
@@ -246,28 +229,7 @@ const Logbook = (): ReactElement => {
         chartData={chartData}
         setSelectedDate={setSelectedDate}
       />
-      {selectedLogItems && (
-        <TableContainer component={Paper} sx={{ maxWidth: 1200, mt: 2 }} >
-          <Table>
-            <TableHead>
-              <TableRow>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {selectedLogItems.map((row) => (
-                <TableRow
-                  key={row.route}
-                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                >
-                  <TableCell>{row.route}</TableCell>
-                  <TableCell sx={{textAlign: 'left'}}>{row.grade}</TableCell>
-                  <TableCell align="right">{row.crag}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+      {selectedLogItems && <RoutesTable tableData={selectedLogItems}/>}
     </LogbookWrapper>
   )
 }

@@ -1,6 +1,6 @@
 import React, { ReactElement } from "react";
 import { Bar, BarChart, CartesianGrid, Legend, Tooltip, XAxis, YAxis } from "recharts";
-import { getColorForIndex } from "../helpers";
+import { getColorForIndex } from "../lib/helpers";
 
 type DateItem = {
   date: string;

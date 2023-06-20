@@ -1,6 +1,6 @@
 import React, { ReactElement } from "react";
 import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from "recharts";
-import { getColorForIndex } from "../helpers";
+import { getColorForIndex } from "../lib/helpers";
 
 type GradePyramidProps = {
   chartData: Record<string, number | string>[];
