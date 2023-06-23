@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect } from "react";
+import React, { Fragment, ReactElement, useContext, useEffect, useState } from "react";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableHead from "@mui/material/TableHead";
@@ -6,24 +6,46 @@ import TableRow from "@mui/material/TableRow";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
+import EditIcon from '@mui/icons-material/Edit';
 import NotesIcon from '@mui/icons-material/Notes';
 import styled from "styled-components";
+import { AppContext } from "../AppContext";
 import { LogItem, SavedLogItemNotesType } from "../lib/types";
+import TextArea from "./TextArea";
+import Button from "./Button";
 
 const RouteSpan = styled.span`
   cursor: pointer;
+`;
+
+const SavedNotesText = styled.p`
+  margin: 5px 0 0 15px;
+  color: #333;
+`;
+
+const NotesTextArea = styled(TextArea)`
+  padding: 18px 0 0 20px;
 `;
 
 type RoutesTableProps = {
   tableData: LogItem[];
   selectedLogItem: string;
   setSelectedLogItem: (itemId: string) => void;
-  savedLogItemNotes: SavedLogItemNotesType[];
 };
 
 const RoutesTable = (props: RoutesTableProps): ReactElement => {
 
-  const { tableData, selectedLogItem, setSelectedLogItem, savedLogItemNotes } = props;
+  const { tableData, selectedLogItem, setSelectedLogItem } = props;
+  const [isEditNotes, setIsEditNotes] = useState<boolean>(false);
+  const [notes, setNotes] = useState<string>('');
+  const {
+    addLogItemNotes, updateLogItemNotes, deleteLogItemNotes, getLogItemNotes, logItemNotes
+  } = useContext(AppContext);
+
+  useEffect(() => {
+    getLogItemNotes();
+    // eslint-disable-next-line
+  }, []);
 
   useEffect(() => {
     const handleEsc = (evt: KeyboardEvent) => {
@@ -41,7 +63,27 @@ const RoutesTable = (props: RoutesTableProps): ReactElement => {
   const toggleViewItem = (itemId: string) => {
     const value = selectedLogItem === itemId ? '' : itemId;
     setSelectedLogItem(value);
+    setIsEditNotes(false);
   };
+
+  const handleSaveNotes = (logItemId: string) => {
+    console.log('savedd with ' + logItemId)
+    addLogItemNotes({
+      logItemId,
+      notes
+    });
+    // updateSavedArticle({
+    //   id: itemId,
+    //   newTitle: itemTitle,
+    //   newSummary: itemSummary,
+    //   newUrl: itemUrl,
+    //   newKeywords: itemTags
+    // });
+    setIsEditNotes(false);
+    getLogItemNotes();
+  }
+
+  console.log(logItemNotes)
 
   return (
     <TableContainer component={Paper} sx={{ maxWidth: 1200, mt: 2 }} >
@@ -52,9 +94,8 @@ const RoutesTable = (props: RoutesTableProps): ReactElement => {
         </TableHead>
         <TableBody>
           {tableData.map((row) => (
-            <>
+            <Fragment key={row.route}>
               <TableRow
-                key={row.route}
                 sx={selectedLogItem === row.id ? { '& td': { border: 0 } } : {}}
               >
                 <TableCell>
@@ -62,10 +103,12 @@ const RoutesTable = (props: RoutesTableProps): ReactElement => {
                     onClick={() => toggleViewItem(row.id)}
                   >
                     {row.route}
-                    <NotesIcon
-                      sx={{ cursor: 'pointer', ml: 2, verticalAlign: 'bottom' }}
-                      onClick={() => toggleViewItem(row.id)}
-                    />
+                    {Object.keys(logItemNotes).includes(row.id) && (
+                      <NotesIcon
+                        sx={{ cursor: 'pointer', ml: 2, verticalAlign: 'bottom' }}
+                        onClick={() => toggleViewItem(row.id)}
+                      />
+                    )}
                   </RouteSpan>
                 </TableCell>
                 <TableCell sx={{textAlign: 'left'}}>{row.grade}</TableCell>
@@ -73,10 +116,35 @@ const RoutesTable = (props: RoutesTableProps): ReactElement => {
               </TableRow>
               {selectedLogItem === row.id && (
                 <TableRow>
-                  <TableCell colSpan={3} sx={{ pt: 0 }}>sdf</TableCell>
+                  <TableCell colSpan={3} sx={{ pt: 0 }}>
+                    {Object.keys(logItemNotes).includes(row.id) && !isEditNotes ? (
+                      <div style={{display: 'flex'}}>
+                        <EditIcon
+                          sx={{ cursor: 'pointer', ml: 2, verticalAlign: 'bottom', width: '0.6em' }}
+                          onClick={() => setIsEditNotes(true)}
+                        />
+                        <SavedNotesText>{logItemNotes[row.id].notes}</SavedNotesText>
+                      </div>
+                    ) : (
+                      <>
+                        <NotesTextArea
+                          value={Object.keys(logItemNotes).includes(row.id) ? logItemNotes[row.id].notes : notes}
+                          name="notes"
+                          placeholder="Notes"
+                          onChange={({ target }) => setNotes(target.value)}
+                        />
+                        <Button
+                          disabled={!notes}
+                          onClick={() => handleSaveNotes(row.id)}
+                        >
+                          Save
+                        </Button>
+                      </>
+                    )}
+                  </TableCell>
                 </TableRow>
               )}
-            </>
+            </Fragment>
           ))}
         </TableBody>
       </Table>

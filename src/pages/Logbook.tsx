@@ -1,4 +1,4 @@
-import React, { ReactElement, useContext, useEffect, useState } from "react";
+import React, { ReactElement, useState } from "react";
 import useGoogleSheets from "use-google-sheets";
 import CircularProgress from '@mui/material/CircularProgress';
 import { Wrapper } from "../components/StyledComponents";
@@ -38,23 +38,12 @@ const Logbook = (): ReactElement => {
   const [timeframe, setTimeframe] = useState<number>(1);
   const [climbType, setClimbType] = useState<string>('boulder');
   const [chartType, setChartType] = useState<string>('date');
-  const {
-    addLogItemNotes, updateLogItemNotes, deleteLogItemNotes, getLogItemNotes, savedLogItemNotes
-  } = useContext(AppContext);
-
-  useEffect(() => {
-    getLogItemNotes();
-    // eslint-disable-next-line
-  }, []);
-
 
   const handleTimeframeChange = (value: number | string ) => {
     if (typeof value === 'number') {
       setTimeframe(value);
     }
   };
-
-  console.log(savedLogItemNotes)
 
   const handleChartTypeChange = (target: HTMLButtonElement) => {
     setChartType(target.value);
@@ -203,7 +192,6 @@ const Logbook = (): ReactElement => {
             tableData={gradeItems}
             selectedLogItem={selectedLogItem}
             setSelectedLogItem={setSelectedLogItem}
-            savedLogItemNotes={savedLogItemNotes}
           />)}
       </LogbookWrapper>
     );
@@ -242,7 +230,6 @@ const Logbook = (): ReactElement => {
           tableData={selectedLogItems}
           selectedLogItem={selectedLogItem}
           setSelectedLogItem={setSelectedLogItem}
-          savedLogItemNotes={savedLogItemNotes}
         />)}
     </LogbookWrapper>
   )

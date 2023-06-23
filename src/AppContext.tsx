@@ -11,10 +11,27 @@ import {
 } from "@firebase/auth";
 import { FirebaseError } from "@firebase/app";
 import { ref, uploadBytes, getDownloadURL } from "@firebase/storage";
-import { query, where, collection, getDocs, doc, setDoc, deleteDoc, updateDoc, serverTimestamp } from "@firebase/firestore";
+import {
+  query,
+  where,
+  collection,
+  getDocs,
+  doc,
+  setDoc,
+  deleteDoc,
+  updateDoc,
+  serverTimestamp
+} from "@firebase/firestore";
 import { auth, db, storage } from "./firebase";
 import { v4 as uuid } from "uuid";
-import { ArticleType, FilterParamsType, SavedArticleType, LogItemNotesType, SavedLogItemNotesType } from "./lib/types";
+import {
+  ArticleType,
+  FilterParamsType,
+  SavedArticleType,
+  LogItemNotesType,
+  SavedLogItemNotesType,
+  NotesByLogItemKeyType
+} from "./lib/types";
 
 interface Props {
   children:
@@ -47,7 +64,7 @@ interface contextTypes {
   loading: boolean;
   currentUser: UserType | null;
   savedArticles: SavedArticleType[];
-  savedLogItemNotes: SavedLogItemNotesType[];
+  logItemNotes: NotesByLogItemKeyType;
   logInUser(email: string, password: string): Promise<void>;
   signInWithGoogle(): Promise<void>;
   registerUser(data: RegistrationType): Promise<void>;
@@ -68,7 +85,7 @@ const contextDefaultVal: contextTypes = {
   loading: false,
   currentUser: null,
   savedArticles: [],
-  savedLogItemNotes: [],
+  logItemNotes: {},
   logInUser: async () => {},
   signInWithGoogle: async () => {},
   registerUser: async () => {},
@@ -91,7 +108,7 @@ export default function AppContextProvider({ children }: Props): ReactElement {
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
   const [loading, setLoading] = useState(false);
   const [savedArticles, setSavedArticles] = useState<SavedArticleType[]>([]);
-  const [savedLogItemNotes, setSavedLogItemNotes] = useState<SavedLogItemNotesType[]>([]);
+  const [savedLogItemNotes, setSavedLogItemNotes] = useState<NotesByLogItemKeyType>({});
 
   const logInUser = async (email: string, password: string) => {
     setLoading(true);
@@ -204,24 +221,27 @@ export default function AppContextProvider({ children }: Props): ReactElement {
             where("userId", "==", userId)
           );
 
-        const querySnapshot = await getDocs(q);
-
         // reset the saved items value
-        setSavedLogItemNotes([]);
+        setSavedLogItemNotes({});
+        const notesCollection: SavedLogItemNotesType[] = [];
 
+        const querySnapshot = await getDocs(q);
         querySnapshot.forEach((doc) => {
-          console.log(doc.data())
-
           const { logItemId, notes } = doc.data();
-          setSavedLogItemNotes((prev) => [
-            ...prev,
-            {
-              id: doc.id,
-              logItemId,
-              notes
-            },
-          ]);
+          notesCollection.push({
+            id: doc.id,
+            logItemId,
+            notes
+          });
         });
+        const notesByLogItemId = notesCollection.reduce((acc, obj) => {
+          const { logItemId, id, notes } = obj;
+          return {
+            ...acc,
+            [logItemId]: { id, notes }
+          }
+        }, {})
+        setSavedLogItemNotes(notesByLogItemId);
       }
     } catch (error) { console.log(error) }
   };
@@ -360,7 +380,7 @@ export default function AppContextProvider({ children }: Props): ReactElement {
         updateSavedArticle,
         deleteSavedArticle,
         signOutUser,
-        savedLogItemNotes,
+        logItemNotes: savedLogItemNotes,
         addLogItemNotes,
         getLogItemNotes,
         updateLogItemNotes,

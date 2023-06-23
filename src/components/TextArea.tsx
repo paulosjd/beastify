@@ -9,6 +9,7 @@ const TextArea = styled.textarea`
   width: 100%;
   min-height: 55px;
   border: 1px solid #A5ABAF;
+  font-size: 14px;
 `;
 
 export default TextArea;

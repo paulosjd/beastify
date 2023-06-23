@@ -26,6 +26,8 @@ export interface FilterParamsType {
   keyword:  string | null;
 }
 
+export type NotesByLogItemKeyType = Record<string, {id: string, notes: string}>
+
 export interface LogItemNotesType {
   logItemId: string;
   notes: string;

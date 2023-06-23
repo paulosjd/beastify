@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState } from "react";
+import React, { ReactElement, useContext, useEffect, useState } from "react";
 import { useHistory } from "react-router";
 import { Link } from "react-router-dom";
 import { AppContext } from "../AppContext";
@@ -12,7 +12,7 @@ export default function Signup(): ReactElement {
   const [displayName, setDisplayName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const { registerUser, handleAuthChange, loading } = React.useContext(AppContext);
+  const { registerUser, handleAuthChange, loading } = useContext(AppContext);
 
   useEffect(() => {
     handleAuthChange({
