@@ -14,7 +14,7 @@ import { ref, uploadBytes, getDownloadURL } from "@firebase/storage";
 import { query, where, collection, getDocs, doc, setDoc, deleteDoc, updateDoc, serverTimestamp } from "@firebase/firestore";
 import { auth, db, storage } from "./firebase";
 import { v4 as uuid } from "uuid";
-import { Dayjs } from "dayjs";
+import { ArticleType, FilterParamsType, SavedArticleType, LogItemNotesType, SavedLogItemNotesType } from "./lib/types";
 
 interface Props {
   children:
@@ -23,45 +23,44 @@ interface Props {
     | React.ReactPortal;
 }
 
-interface userTypes {
+interface UserType {
   displayName: string | null;
   userId: string;
   avatar?: string | null;
 }
 
-interface registrationTypes {
+interface RegistrationType {
   displayName: string;
   email: string;
   password: string;
 }
 
-export interface savedItemInterface {
-  itemId: string;
-  title: string;
-  summary: string;
-  url: string;
-  keywords: string[];
-}
-
-export interface filterParamsTypes {
-  startDate:  Dayjs | null;
-  endDate:  Dayjs | null;
-  keyword:  string | null;
+interface EditedArticleType {
+  id: string;
+  newTitle: string;
+  newSummary: string;
+  newUrl: string;
+  newKeywords: string[];
 }
 
 interface contextTypes {
   loading: boolean;
-  currentUser: userTypes | null;
-  savedArticles: savedItemInterface[];
+  currentUser: UserType | null;
+  savedArticles: SavedArticleType[];
+  savedLogItemNotes: SavedLogItemNotesType[];
   logInUser(email: string, password: string): Promise<void>;
-  signInWithGoogle(): any;  // FIXME
-  registerUser(data: registrationTypes): Promise<void>;
+  signInWithGoogle(): Promise<void>;
+  registerUser(data: RegistrationType): Promise<void>;
   updateAvatar(file: { image: Blob; ext: string }): Promise<void>;
   signOutUser(): Promise<void>;
-  addArticle(params: { title: string; summary: string, url: string, keywords: string[] }): Promise<void>;
-  updateSavedArticle(params: { newTitle: string, newSummary: string, newUrl: string, newKeywords: string[], id: string }): Promise<void>;
+  addArticle(params: ArticleType): Promise<void>;
+  updateSavedArticle(params: EditedArticleType): Promise<void>;
   deleteSavedArticle(id: string): Promise<void>;
-  getSavedArticles(filterParams?: filterParamsTypes): Promise<void>;
+  getSavedArticles(filterParams?: FilterParamsType): Promise<void>;
+  addLogItemNotes(params: LogItemNotesType): Promise<void>;
+  updateLogItemNotes(params: SavedLogItemNotesType): Promise<void>;
+  deleteLogItemNotes(id: string): Promise<void>;
+  getLogItemNotes(): Promise<void>;
   handleAuthChange: (params: { cb?: VoidFunction; err?: VoidFunction }) => void;
 }
 
@@ -69,6 +68,7 @@ const contextDefaultVal: contextTypes = {
   loading: false,
   currentUser: null,
   savedArticles: [],
+  savedLogItemNotes: [],
   logInUser: async () => {},
   signInWithGoogle: async () => {},
   registerUser: async () => {},
@@ -78,15 +78,20 @@ const contextDefaultVal: contextTypes = {
   updateSavedArticle: async () => {},
   deleteSavedArticle: async () => {},
   getSavedArticles: async () => {},
+  addLogItemNotes: async () => {},
+  updateLogItemNotes: async () => {},
+  deleteLogItemNotes: async () => {},
+  getLogItemNotes: async () => {},
   handleAuthChange: () => {},
 };
 
 export const AppContext = React.createContext<contextTypes>(contextDefaultVal);
 
 export default function AppContextProvider({ children }: Props): ReactElement {
-  const [currentUser, setCurrentUser] = useState<userTypes | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserType | null>(null);
   const [loading, setLoading] = useState(false);
-  const [savedArticles, setSavedArticles] = useState<savedItemInterface[]>([]);
+  const [savedArticles, setSavedArticles] = useState<SavedArticleType[]>([]);
+  const [savedLogItemNotes, setSavedLogItemNotes] = useState<SavedLogItemNotesType[]>([]);
 
   const logInUser = async (email: string, password: string) => {
     setLoading(true);
@@ -116,7 +121,7 @@ export default function AppContextProvider({ children }: Props): ReactElement {
     }
   }
 
-  const registerUser = async (data: registrationTypes) => {
+  const registerUser = async (data: RegistrationType) => {
     setLoading(true);
     try {
       await createUserWithEmailAndPassword(auth, data.email, data.password).then(async ({ user }) => {
@@ -172,7 +177,77 @@ export default function AppContextProvider({ children }: Props): ReactElement {
     });
   };
 
-  const addArticle = async (params: { title: string; summary: string, url: string, keywords: string[] }) => {
+  const addLogItemNotes = async (params: LogItemNotesType) => {
+    try {
+      const docRef = doc(
+        db,
+        "logItem",
+        uuid() /*unique id for new document, n.b.firestore can do this for you if you leave the third parameter empty*/
+      );
+      const userId = auth.currentUser;
+      if (userId !== null) {
+        await setDoc(docRef, {
+          userId: userId.uid,
+          logItemId: params.logItemId,
+          notes: params.notes
+        });
+      }
+    } catch (error) { }
+  };
+
+  const getLogItemNotes = async () => {
+    try {
+      if (auth.currentUser !== null) {
+        const userId = auth.currentUser.uid;
+        const q = query(
+            collection(db, "logItem"),
+            where("userId", "==", userId)
+          );
+
+        const querySnapshot = await getDocs(q);
+
+        // reset the saved items value
+        setSavedLogItemNotes([]);
+
+        querySnapshot.forEach((doc) => {
+          console.log(doc.data())
+
+          const { logItemId, notes } = doc.data();
+          setSavedLogItemNotes((prev) => [
+            ...prev,
+            {
+              id: doc.id,
+              logItemId,
+              notes
+            },
+          ]);
+        });
+      }
+    } catch (error) { console.log(error) }
+  };
+
+  const updateLogItemNotes = async (
+    params: SavedLogItemNotesType
+  ) => {
+    const { id, logItemId, notes } = params;
+    try {
+      const docRef = doc(db, "logItem", id);
+      await updateDoc(docRef, {
+        id,
+        logItemId,
+        notes
+      });
+    } catch (error) { }
+  };
+
+  const deleteLogItemNotes = async (id: string) => {
+    try {
+      const docRef = doc(db, "article", id);
+      await deleteDoc(docRef);
+    } catch (error) { }
+  };
+
+  const addArticle = async (params: ArticleType) => {
     try {
       const docRef = doc(
         db,
@@ -193,12 +268,7 @@ export default function AppContextProvider({ children }: Props): ReactElement {
     } catch (error) { }
   };
 
-  const getSavedArticles = async (filterParams?: filterParamsTypes) => {
-    // TODO pagination
-    // pagination: https://firebase.google.com/docs/firestore/query-data/query-cursors
-    // count https://firebase.google.com/docs/firestore/query-data/aggregation-queries#use_the_count_aggregation
-
-
+  const getSavedArticles = async (filterParams?: FilterParamsType) => {
     try {
       if (auth.currentUser !== null) {
         const userId = auth.currentUser.uid;
@@ -290,6 +360,11 @@ export default function AppContextProvider({ children }: Props): ReactElement {
         updateSavedArticle,
         deleteSavedArticle,
         signOutUser,
+        savedLogItemNotes,
+        addLogItemNotes,
+        getLogItemNotes,
+        updateLogItemNotes,
+        deleteLogItemNotes
       }}
     >
       {children}

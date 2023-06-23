@@ -5,7 +5,8 @@ import ExpandCircleDownIcon from '@mui/icons-material/ExpandCircleDown';
 import styled from "styled-components";
 import Button from "./Button";
 import Input from "./Input";
-import { AppContext, savedItemInterface } from "../AppContext";
+import { AppContext } from "../AppContext";
+import { SavedArticleType } from "../lib/types";
 import { Spacing } from "./StyledComponents";
 import TextArea from "./TextArea";
 import styles from "./styles.module.css";
@@ -30,7 +31,7 @@ const RowMargin = styled(Row)`
 `;
 
 interface savedItemProps {
-  savedItem: savedItemInterface;
+  savedItem: SavedArticleType;
   editItemId: string;
   viewItemId: string;
   tags: string[];

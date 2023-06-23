@@ -34,14 +34,10 @@ export const sortDateStrings = (arr: string[]) => {
 
 export const getColorForIndex = (ind: number): string => {
   const colors = [
-    '#bbef2b', '#A4DE6C', '#32c194', '#8DD1E1', '#83A6ED', '#8884D8', '#d671ed', '#FFC658', '#F9923E',
-    '#F2562B', '#F2562B', '#7c7e8e'
+    '#C2DF22FF', '#c2df22', '#86d449', '#51c468', '#2ab07e', '#1e9a89', '#24858d', '#2d6f8e', '#38578c', '#423d84',
+    '#482172', '#390962', '#390962', '#35264b', '#221526', '#221526', '#221526', '#221526'
   ];
-  let color = colors[ind];
-  if (!color) {
-    color = colors[Math.floor(Math.random() * colors.length)];
-  }
-  return color;
+  return colors[ind] || '#1e9a89';
 };
 
 export const getLogitemId = (logItem: LogItem) => {

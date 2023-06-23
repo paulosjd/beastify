@@ -1,8 +1,8 @@
 import React, { ReactElement, useContext, useEffect, useState } from "react";
-import { useHistory } from "react-router";
 import 'dayjs/locale/de';
 import styled from "styled-components";
-import { AppContext, filterParamsTypes } from "../AppContext";
+import { AppContext } from "../AppContext";
+import { FilterParamsType } from "../lib/types";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import ArticleTags from "../components/ArticleTags";
@@ -44,13 +44,13 @@ export default function Articles(): ReactElement {
   const [tags, setTags] = useState<string[]>([]);
   const [editItemId, setEditItemId] = useState<string>("");
   const [viewItemId, setViewItemId] = useState<string>("");
-  const [filterParams, setFilterParams] = useState<filterParamsTypes>(filterParamsInitialState);
+  const [filterParams, setFilterParams] = useState<FilterParamsType>(filterParamsInitialState);
   const { addArticle, getSavedArticles, savedArticles, currentUser } = useContext(AppContext);
 
   useEffect(() => {
     getSavedArticles();
     // eslint-disable-next-line
-  }, [currentUser]);
+  }, []);
 
   useEffect(() => {
     const handleEsc = (evt: KeyboardEvent) => {

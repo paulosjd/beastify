@@ -1,7 +1,8 @@
-import React, { ReactElement, useState } from "react";
+import React, { ReactElement, useContext, useEffect, useState } from "react";
 import useGoogleSheets from "use-google-sheets";
 import CircularProgress from '@mui/material/CircularProgress';
 import { Wrapper } from "../components/StyledComponents";
+import { AppContext } from "../AppContext";
 import { countForKey, getLogitemId, groupByKey, monthToNumber, sortDateStrings } from "../lib/helpers"
 import { LogItem } from "../lib/types"
 import GradeByDate from "../components/GradeByDate"
@@ -25,12 +26,27 @@ type PyramidItem = {
   count: number;
 };
 
+type ChartDateItem = {
+  [key: string]: number | string;
+  date: string;
+};
+
 const Logbook = (): ReactElement => {
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedGrade, setSelectedGrade] = useState<string>('');
+  const [selectedLogItem, setSelectedLogItem] = useState<string>('');
   const [timeframe, setTimeframe] = useState<number>(1);
   const [climbType, setClimbType] = useState<string>('boulder');
   const [chartType, setChartType] = useState<string>('date');
+  const {
+    addLogItemNotes, updateLogItemNotes, deleteLogItemNotes, getLogItemNotes, savedLogItemNotes
+  } = useContext(AppContext);
+
+  useEffect(() => {
+    getLogItemNotes();
+    // eslint-disable-next-line
+  }, []);
+
 
   const handleTimeframeChange = (value: number | string ) => {
     if (typeof value === 'number') {
@@ -38,10 +54,14 @@ const Logbook = (): ReactElement => {
     }
   };
 
+  console.log(savedLogItemNotes)
+
   const handleChartTypeChange = (target: HTMLButtonElement) => {
     setChartType(target.value);
     setSelectedDate('');
   }
+
+  console.log(selectedLogItem)
 
   const sheetsObj = {
     apiKey: process.env.REACT_APP_SHEETS_API_KEY || '',
@@ -91,11 +111,6 @@ const Logbook = (): ReactElement => {
     crag: obj['Crag name']
   }));
 
-  // TODO make unique id's from logitem - name/date/crag_ind ?? to use as key prop and as way of making request to update sheets (api request)
-  // - for add e.g. notes or edit item ?
-  // way to add to logbook ? ie can start with blank logbook/sheet not from ukc
-
-
   logData = logData.filter((obj: LogItem) => !!obj.grade && !!obj.date);
   logData = logData.map((obj: LogItem): LogItem => ({
     ...obj,
@@ -103,21 +118,13 @@ const Logbook = (): ReactElement => {
     date: '01/'.concat(obj.date.split('/').slice(1,3).join('/'))
   }));
 
-  const logitemIds: string[] = [];
-  logData = logData.map((obj: LogItem): LogItem => {
-    const id = getLogitemId(obj);
-    logitemIds.push(id)
-    return { ...obj, id  }
-  });
-  console.log(logData)
+  logData = logData.map((obj: LogItem): LogItem => ({ ...obj, id: getLogitemId(obj) }));
 
   // Remove any duplicates
   logData = logData.filter((item, index, itemArray) => {
     return index === itemArray.findIndex(
       (t) => t.id === item.id)
   })
-
-  console.log(logData)
 
   let re: RegExp
   if (climbType === 'boulder') {
@@ -131,11 +138,6 @@ const Logbook = (): ReactElement => {
   let selectedLogItems: LogItem[] | undefined;
   if (selectedDate) {
     selectedLogItems = groupedData[selectedDate];
-  }
-
-  type ChartDateItem = {
-    [key: string]: number | string;
-    date: string;
   }
 
   const dates = Object.keys(groupedData).map(dt => {
@@ -181,12 +183,12 @@ const Logbook = (): ReactElement => {
       chartData.push({ grade, count });
       chartData = chartData.sort(
         (a, b) => a.grade > b.grade ? 1 : a.grade === b.grade ? 0 : -1
-      )
+      );
     }
     let gradeItems: LogItem[] | undefined;
     if (selectedGrade) {
       const itemsByGrade = groupByKey<LogItem>(itemsInDate, 'grade');
-      gradeItems = itemsByGrade[selectedGrade]
+      gradeItems = itemsByGrade[selectedGrade];
     }
 
     return (
@@ -196,16 +198,22 @@ const Logbook = (): ReactElement => {
             chartData={chartData}
             setSelectedGrade={setSelectedGrade}
         />
-        {gradeItems && <RoutesTable tableData={gradeItems}/>}
+        {gradeItems && (
+          <RoutesTable
+            tableData={gradeItems}
+            selectedLogItem={selectedLogItem}
+            setSelectedLogItem={setSelectedLogItem}
+            savedLogItemNotes={savedLogItemNotes}
+          />)}
       </LogbookWrapper>
-    )
+    );
   }
 
   const chartData = [];
   for (const date of dateKeys.reverse()) {
     const chartItem: ChartDateItem = {
       date,
-    }
+    };
     const logItemList = groupedData[date];
     for (const logItem of logItemList) {
       const gradeCount = chartItem[logItem.grade];
@@ -229,7 +237,13 @@ const Logbook = (): ReactElement => {
         chartData={chartData}
         setSelectedDate={setSelectedDate}
       />
-      {selectedLogItems && <RoutesTable tableData={selectedLogItems}/>}
+      {selectedLogItems && (
+        <RoutesTable
+          tableData={selectedLogItems}
+          selectedLogItem={selectedLogItem}
+          setSelectedLogItem={setSelectedLogItem}
+          savedLogItemNotes={savedLogItemNotes}
+        />)}
     </LogbookWrapper>
   )
 }

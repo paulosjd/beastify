@@ -10,7 +10,7 @@ import styled from "styled-components";
 import Input from "./Input";
 import { AppContext } from "../AppContext";
 import { filterParamsInitialState } from "../pages/Articles";
-import { filterParamsTypes } from "../AppContext";
+import { FilterParamsType } from "../lib/types";
 import {IconButton} from "@mui/material";
 import Clear from "@mui/icons-material/Clear";
 import Button from "./Button";
@@ -37,8 +37,8 @@ const SearchInput = styled(Input)`
 `;
 
 interface searchProps {
-  filterParams: filterParamsTypes;
-  setFilterParams: (params: filterParamsTypes) => void;
+  filterParams: FilterParamsType;
+  setFilterParams: (params: FilterParamsType) => void;
 }
 
 export default function Search({ filterParams, setFilterParams }: searchProps): ReactElement {

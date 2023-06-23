@@ -1,23 +1,15 @@
-import React, { ReactElement, useContext, useEffect, useState } from "react";
+import React, { ReactElement, useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useHistory } from "react-router";
-import useGoogleSheets from 'use-google-sheets';
 import styled from "styled-components";
-import { AppContext, filterParamsTypes } from "../AppContext";
+import { AppContext } from "../AppContext";
 import Button from "../components/Button";
 import { Box } from "@mui/material";
-import { Spacing, Wrapper } from "../components/StyledComponents";
+import { Wrapper } from "../components/StyledComponents";
 
 const HomeWrapper = styled(Wrapper)`
   margin-top: 30px;
 `;
-
-interface sheetsParams {
-  apiKey: string;
-  sheetId: string;
-  sheetOptions?: { id: string }[]
-}
-
 
 export default function Home(): ReactElement {
   const history = useHistory();
