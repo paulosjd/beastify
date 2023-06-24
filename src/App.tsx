@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import Logbook from "./pages/Logbook";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import Tracker from "./pages/Tracker";
 
 const AppWrapper = styled.div`
   max-width: 1420px;
@@ -26,6 +27,7 @@ function App() {
           <Route exact path="/logbook" component={Logbook} />
           <Route exact path="/login" component={Login} />
           <Route exact path="/register" component={Signup} />
+          <Route exact path="/tracker" component={Tracker} />
           <Redirect path="*" to="/home" />
         </Switch>
       </AppWrapper>

@@ -10,17 +10,11 @@ type ChartDataItem = DateItem | Record<string, number>;
 
 type GradePyramidProps = {
   chartData: ChartDataItem[] | [];
+  grades: string[];
   setSelectedDate: (dt: string) => void;
 };
 
-export default function GradeByDate({ chartData, setSelectedDate }: GradePyramidProps): ReactElement {
-
-  const grades: Set<string> = new Set();
-  chartData
-    .forEach(item => Object.keys(item)
-      .filter(key => key !== 'date')
-      .forEach(gradeKey => grades.add(gradeKey))
-    );
+export default function GradeByDate({ chartData, grades, setSelectedDate,  }: GradePyramidProps): ReactElement {
 
   const handleChartClick = (activeLabel: string | undefined) => {
     if (typeof activeLabel === 'string') {
@@ -36,14 +30,12 @@ export default function GradeByDate({ chartData, setSelectedDate }: GradePyramid
       onClick={({activeLabel}) => handleChartClick(activeLabel)}
       margin={{ right: 35, top: 8 }}
     >
-      <CartesianGrid strokeDasharray="3 3" />
+      <CartesianGrid strokeDasharray="3 3" vertical={false}/>
       <XAxis dataKey="date" />
       <YAxis />
       <Tooltip />
       <Legend />
-      {Array.from(grades)
-        .sort((a: string, b: string) => a > b ? 1 : a === b ? 0 : -1)
-        .map((item, ind) => (
+      {grades.map((item, ind) => (
           <Bar
             key={item}
             dataKey={item}

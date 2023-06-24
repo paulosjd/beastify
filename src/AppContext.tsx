@@ -262,7 +262,7 @@ export default function AppContextProvider({ children }: Props): ReactElement {
 
   const deleteLogItemNotes = async (id: string) => {
     try {
-      const docRef = doc(db, "article", id);
+      const docRef = doc(db, "logItem", id);
       await deleteDoc(docRef);
     } catch (error) { }
   };

@@ -2,7 +2,6 @@ import React, { ReactElement, useState } from "react";
 import useGoogleSheets from "use-google-sheets";
 import CircularProgress from '@mui/material/CircularProgress';
 import { Wrapper } from "../components/StyledComponents";
-import { AppContext } from "../AppContext";
 import { countForKey, getLogitemId, groupByKey, monthToNumber, sortDateStrings } from "../lib/helpers"
 import { LogItem } from "../lib/types"
 import GradeByDate from "../components/GradeByDate"
@@ -35,6 +34,7 @@ const Logbook = (): ReactElement => {
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedGrade, setSelectedGrade] = useState<string>('');
   const [selectedLogItem, setSelectedLogItem] = useState<string>('');
+  const [selectedFilterGrades, setSelectedFilterGrades] = useState<string[]>([]);
   const [timeframe, setTimeframe] = useState<number>(1);
   const [climbType, setClimbType] = useState<string>('boulder');
   const [chartType, setChartType] = useState<string>('date');
@@ -49,8 +49,6 @@ const Logbook = (): ReactElement => {
     setChartType(target.value);
     setSelectedDate('');
   }
-
-  console.log(selectedLogItem)
 
   const sheetsObj = {
     apiKey: process.env.REACT_APP_SHEETS_API_KEY || '',
@@ -69,20 +67,25 @@ const Logbook = (): ReactElement => {
 
   let logData: LogItem[];
 
-  const logbookOptions = (
-    <LogbookOptions
-      timeframe={timeframe}
-      handleTimeframeChange={handleTimeframeChange}
-      climbType={climbType}
-      setClimbType={setClimbType}
-      chartType={chartType}
-      handleChartTypeChange={handleChartTypeChange}
-    />
-  );
+  const getLogbookOptions = (params?: {grades: string[]}) => {
+    return (
+      <LogbookOptions
+        timeframe={timeframe}
+        handleTimeframeChange={handleTimeframeChange}
+        climbType={climbType}
+        setClimbType={setClimbType}
+        chartType={chartType}
+        handleChartTypeChange={handleChartTypeChange}
+        selectedFilterGrades={selectedFilterGrades}
+        setSelectedFilterGrades={setSelectedFilterGrades}
+        gradeOptions={params?.grades}
+      />
+    )
+  };
 
   const noData = (
     <LogbookWrapper>
-      {logbookOptions}
+      {getLogbookOptions()}
       <NoDataParagraph>No data available</NoDataParagraph>
     </LogbookWrapper>
   );
@@ -182,7 +185,7 @@ const Logbook = (): ReactElement => {
 
     return (
       <LogbookWrapper>
-        {logbookOptions}
+        {getLogbookOptions()}
         <GradePyramid
             chartData={chartData}
             setSelectedGrade={setSelectedGrade}
@@ -197,18 +200,23 @@ const Logbook = (): ReactElement => {
     );
   }
 
+  const gradesSet: Set<string> = new Set();
   const chartData = [];
   for (const date of dateKeys.reverse()) {
     const chartItem: ChartDateItem = {
       date,
     };
     const logItemList = groupedData[date];
-    for (const logItem of logItemList) {
-      const gradeCount = chartItem[logItem.grade];
+    for (let { grade } of logItemList) {
+      gradesSet.add(grade)
+      if (selectedFilterGrades.length && !selectedFilterGrades.includes(grade)) {
+        continue;
+      }
+      const gradeCount = chartItem[grade];
       if (typeof gradeCount === 'number') {
-        chartItem[logItem.grade] = gradeCount + 1;
+        chartItem[grade] = gradeCount + 1;
       } else {
-        chartItem[logItem.grade] = 1;
+        chartItem[grade] = 1;
       }
     }
     chartData.push(chartItem);
@@ -218,11 +226,15 @@ const Logbook = (): ReactElement => {
     return noData;
   }
 
+  const grades = Array.from(gradesSet)
+    .sort((a: string, b: string) => a > b ? 1 : a === b ? 0 : -1);
+
   return (
     <LogbookWrapper>
-      {logbookOptions}
+      {getLogbookOptions({ grades })}
       <GradeByDate
         chartData={chartData}
+        grades={grades}
         setSelectedDate={setSelectedDate}
       />
       {selectedLogItems && (

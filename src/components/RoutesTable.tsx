@@ -50,7 +50,11 @@ const RoutesTable = (props: RoutesTableProps): ReactElement => {
   useEffect(() => {
     const handleEsc = (evt: KeyboardEvent) => {
       if (evt.key === 'Escape') {
-        setSelectedLogItem('');
+        if (isEditNotes) {
+          setIsEditNotes(false);
+        } else {
+          setSelectedLogItem('');
+        }
       }
     };
     window.addEventListener('keydown', handleEsc);
@@ -63,27 +67,25 @@ const RoutesTable = (props: RoutesTableProps): ReactElement => {
   const toggleViewItem = (itemId: string) => {
     const value = selectedLogItem === itemId ? '' : itemId;
     setSelectedLogItem(value);
+    setNotes('');
     setIsEditNotes(false);
   };
 
-  const handleSaveNotes = (logItemId: string) => {
-    console.log('savedd with ' + logItemId)
-    addLogItemNotes({
-      logItemId,
-      notes
-    });
-    // updateSavedArticle({
-    //   id: itemId,
-    //   newTitle: itemTitle,
-    //   newSummary: itemSummary,
-    //   newUrl: itemUrl,
-    //   newKeywords: itemTags
-    // });
+  const handleSaveNotes = async (logItemId: string, notesDocId: string) => {
+    const data = { logItemId, notes };
+    if (isEditNotes) {
+      if (!notes) {
+        await deleteLogItemNotes(notesDocId);
+        setSelectedLogItem('');
+      } else {
+        await updateLogItemNotes({ ...data, id: notesDocId });
+      }
+    } else {
+      await addLogItemNotes(data);
+    }
     setIsEditNotes(false);
     getLogItemNotes();
   }
-
-  console.log(logItemNotes)
 
   return (
     <TableContainer component={Paper} sx={{ maxWidth: 1200, mt: 2 }} >
@@ -121,21 +123,24 @@ const RoutesTable = (props: RoutesTableProps): ReactElement => {
                       <div style={{display: 'flex'}}>
                         <EditIcon
                           sx={{ cursor: 'pointer', ml: 2, verticalAlign: 'bottom', width: '0.6em' }}
-                          onClick={() => setIsEditNotes(true)}
+                          onClick={() => {
+                            setNotes(logItemNotes[row.id].notes)
+                            setIsEditNotes(true);
+                          }}
                         />
                         <SavedNotesText>{logItemNotes[row.id].notes}</SavedNotesText>
                       </div>
                     ) : (
                       <>
                         <NotesTextArea
-                          value={Object.keys(logItemNotes).includes(row.id) ? logItemNotes[row.id].notes : notes}
+                          value={notes}
                           name="notes"
                           placeholder="Notes"
                           onChange={({ target }) => setNotes(target.value)}
                         />
                         <Button
-                          disabled={!notes}
-                          onClick={() => handleSaveNotes(row.id)}
+                          disabled={!notes && !isEditNotes}
+                          onClick={() => handleSaveNotes(row.id, logItemNotes[row.id]?.id || '')}
                         >
                           Save
                         </Button>

@@ -26,6 +26,8 @@ export default function Home(): ReactElement {
 
   // TODO projects ??
 
+  // TODO make below DRY using .map
+
   return (
     <HomeWrapper>
       <Box component="span" sx={{ p: 4, border: '1px solid #1976d2', borderRadius: 3 }}>
@@ -36,6 +38,11 @@ export default function Home(): ReactElement {
       <Box component="span" sx={{ p: 4, border: '1px solid #1976d2', borderRadius: 3, mt: 3 }}>
         <Link to="/logbook">
           <Button>Logbook</Button>
+        </Link>
+      </Box>
+      <Box component="span" sx={{ p: 4, border: '1px solid #1976d2', borderRadius: 3, mt: 3 }}>
+        <Link to="/tracker">
+          <Button>Tracker</Button>
         </Link>
       </Box>
     </HomeWrapper>

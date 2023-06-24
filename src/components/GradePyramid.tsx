@@ -23,7 +23,7 @@ const GradePyramid = ({ chartData, setSelectedGrade }: GradePyramidProps): React
       onClick={({activeLabel}) => handleChartClick(activeLabel)}
       margin={{ right: 35, top: 8 }}
     >
-      <CartesianGrid strokeDasharray="3 3" />
+      <CartesianGrid strokeDasharray="3 3" vertical={false} />
       <XAxis dataKey="grade" />
       <YAxis />
       <Tooltip />
