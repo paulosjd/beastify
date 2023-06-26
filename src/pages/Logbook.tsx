@@ -1,23 +1,17 @@
 import React, { ReactElement, useState } from "react";
 import useGoogleSheets from "use-google-sheets";
 import CircularProgress from '@mui/material/CircularProgress';
-import { Wrapper } from "../components/StyledComponents";
+import styled from "styled-components";
+import { NoDataParagraph, Wrapper } from "../components/StyledComponents";
 import { countForKey, getLogitemId, groupByKey, monthToNumber, sortDateStrings } from "../lib/helpers"
 import { LogItem } from "../lib/types"
 import GradeByDate from "../components/GradeByDate"
 import LogbookOptions from "../components/LogbookOptions";
-import styled from "styled-components";
 import GradePyramid from "../components/GradePyramid";
 import RoutesTable from "../components/RoutesTable";
 
 const LogbookWrapper = styled(Wrapper)`
   margin-top: 15px;
-`;
-
-const NoDataParagraph = styled.p`
-  font-size: 20px;
-  color: #1E2828FF;
-  margin-top: 40px;
 `;
 
 type PyramidItem = {
@@ -52,7 +46,7 @@ const Logbook = (): ReactElement => {
 
   const sheetsObj = {
     apiKey: process.env.REACT_APP_SHEETS_API_KEY || '',
-    sheetId: process.env.REACT_APP_SHEET_ID || '',
+    sheetId: process.env.REACT_APP_LOGBOOK_SHEET_ID || '',
   };
 
   const { data, loading } = useGoogleSheets(sheetsObj);
@@ -95,7 +89,7 @@ const Logbook = (): ReactElement => {
     return noData;
   }
 
-  logData = sheetData.map((obj: Record<string,any>): LogItem => ({
+  logData = sheetData.map((obj: Record<string, any>): LogItem => ({
     id: '',
     route: obj['Climb name'],
     grade: obj['Grade'],

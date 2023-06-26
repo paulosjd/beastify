@@ -24,3 +24,9 @@ export const Wrapper = styled.div`
   align-items: center;
   text-align: center;
 `;
+
+export const NoDataParagraph = styled.p`
+  font-size: 20px;
+  color: #1E2828FF;
+  margin-top: 40px;
+`;

@@ -32,12 +32,12 @@ export const sortDateStrings = (arr: string[]) => {
   })
 };
 
-export const getColorForIndex = (ind: number): string => {
-  const colors = [
+export const getColorForIndex = (ind: number, colors?: string[]): string => {
+  let colorCodes = colors || [
     '#C2DF22FF', '#c2df22', '#86d449', '#51c468', '#2ab07e', '#1e9a89', '#24858d', '#2d6f8e', '#38578c', '#423d84',
     '#482172', '#390962', '#390962', '#35264b', '#221526', '#221526', '#221526', '#221526'
   ];
-  return colors[ind] || '#1e9a89';
+  return colorCodes[ind] || '#1e9a89';
 };
 
 export const getLogitemId = (logItem: LogItem) => {
@@ -46,4 +46,9 @@ export const getLogitemId = (logItem: LogItem) => {
     .toLowerCase()
     .replace(/\s/g, '_')
     .replace(/\W/g, '');
+};
+
+export const dateFromTimestamp = (timestamp: number) => {
+  const date = new Date(timestamp);
+  return `${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`
 };
