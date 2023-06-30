@@ -50,5 +50,33 @@ export const getLogitemId = (logItem: LogItem) => {
 
 export const dateFromTimestamp = (timestamp: number) => {
   const date = new Date(timestamp);
-  return `${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`
+  return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
+};
+
+export function linearRegression(inputArray: any, xLabel: any, yLabel: any) {
+  const x = inputArray.map((element: any) => element[xLabel]);
+  const y = inputArray.map((element: any) => element[yLabel]);
+  const sumX = x.reduce((prev: any, curr: any) => prev + curr, 0);
+  const avgX = sumX / x.length;
+  const xDifferencesToAverage = x.map((value: any) => avgX - value);
+  const xDifferencesToAverageSquared = xDifferencesToAverage.map(
+    (value: any) => value ** 2
+  );
+  const SSxx = xDifferencesToAverageSquared.reduce(
+    (prev: any, curr: any) => prev + curr,
+    0
+  );
+  const sumY = y.reduce((prev: any, curr: any) => prev + curr, 0);
+  const avgY = sumY / y.length;
+  const yDifferencesToAverage = y.map((value: any) => avgY - value);
+  const xAndYDifferencesMultiplied = xDifferencesToAverage.map(
+    (curr: any, index: any) => curr * yDifferencesToAverage[index]
+  );
+  const SSxy = xAndYDifferencesMultiplied.reduce(
+    (prev: any, curr: any) => prev + curr,
+    0
+  );
+  const slope = SSxy / SSxx;
+  const intercept = avgY - slope * avgX;
+  return (x: any) => intercept + slope * x;
 };

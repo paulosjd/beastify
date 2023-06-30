@@ -10,6 +10,7 @@ import { Theme, useTheme } from '@mui/material/styles';
 import Chip from '@mui/material/Chip';
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import ToggleButton from "@mui/material/ToggleButton";
+
 type LogbookOptionsProps = {
   timeframe: number;
   handleTimeframeChange: (tf: number | string) => void;
