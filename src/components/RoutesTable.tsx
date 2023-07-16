@@ -73,7 +73,8 @@ const RoutesTable = (props: RoutesTableProps): ReactElement => {
 
   const handleSaveNotes = async (logItemId: string, notesDocId: string) => {
     const data = { logItemId, notes };
-    if (isEditNotes) {
+    const isEditLogbookNotes = selectedLogItem && tableData.find(x => x.id === selectedLogItem)?.notes && !logItemNotes[selectedLogItem]?.notes && !!notes;
+    if (isEditNotes && !isEditLogbookNotes) {
       if (!notes) {
         await deleteLogItemNotes(notesDocId);
         setSelectedLogItem('');
@@ -95,62 +96,65 @@ const RoutesTable = (props: RoutesTableProps): ReactElement => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {tableData.map((row) => (
-            <Fragment key={row.route}>
-              <TableRow
-                sx={selectedLogItem === row.id ? { '& td': { border: 0 } } : {}}
-              >
-                <TableCell>
-                  <RouteSpan
-                    onClick={() => toggleViewItem(row.id)}
-                  >
-                    {row.route}
-                    {Object.keys(logItemNotes).includes(row.id) && (
-                      <NotesIcon
-                        sx={{ cursor: 'pointer', ml: 2, verticalAlign: 'bottom' }}
-                        onClick={() => toggleViewItem(row.id)}
-                      />
-                    )}
-                  </RouteSpan>
-                </TableCell>
-                <TableCell sx={{textAlign: 'left'}}>{row.grade}</TableCell>
-                <TableCell align='right'>{row.crag}</TableCell>
-              </TableRow>
-              {selectedLogItem === row.id && (
-                <TableRow>
-                  <TableCell colSpan={3} sx={{ pt: 0 }}>
-                    {Object.keys(logItemNotes).includes(row.id) && !isEditNotes ? (
-                      <div style={{display: 'flex'}}>
-                        <EditIcon
-                          sx={{ cursor: 'pointer', ml: 2, verticalAlign: 'bottom', width: '0.6em' }}
-                          onClick={() => {
-                            setNotes(logItemNotes[row.id].notes)
-                            setIsEditNotes(true);
-                          }}
+          {tableData.map((row) => {
+            const savedNotes = logItemNotes[row.id]?.notes || row.notes;
+            return (
+              <Fragment key={row.route}>
+                <TableRow
+                  sx={selectedLogItem === row.id ? { '& td': { border: 0 } } : {}}
+                >
+                  <TableCell>
+                    <RouteSpan
+                      onClick={() => toggleViewItem(row.id)}
+                    >
+                      {row.route}
+                      {savedNotes && (
+                        <NotesIcon
+                          sx={{ cursor: 'pointer', ml: 2, verticalAlign: 'bottom' }}
+                          onClick={() => toggleViewItem(row.id)}
                         />
-                        <SavedNotesText>{logItemNotes[row.id].notes}</SavedNotesText>
-                      </div>
-                    ) : (
-                      <>
-                        <NotesTextArea
-                          value={notes}
-                          name="notes"
-                          placeholder="Notes"
-                          onChange={({ target }) => setNotes(target.value)}
-                        />
-                        <Button
-                          disabled={!notes && !isEditNotes}
-                          onClick={() => handleSaveNotes(row.id, logItemNotes[row.id]?.id || '')}
-                        >
-                          Save
-                        </Button>
-                      </>
-                    )}
+                      )}
+                    </RouteSpan>
                   </TableCell>
+                  <TableCell sx={{textAlign: 'left'}}>{row.grade}</TableCell>
+                  <TableCell align='right'>{row.crag}</TableCell>
                 </TableRow>
-              )}
-            </Fragment>
-          ))}
+                {selectedLogItem === row.id && (
+                  <TableRow>
+                    <TableCell colSpan={3} sx={{ pt: 0 }}>
+                      {savedNotes && !isEditNotes ? (
+                        <div style={{display: 'flex'}}>
+                          <EditIcon
+                            sx={{ cursor: 'pointer', ml: 2, verticalAlign: 'bottom', width: '0.6em' }}
+                            onClick={() => {
+                              setNotes(savedNotes)
+                              setIsEditNotes(true);
+                            }}
+                          />
+                          <SavedNotesText>{savedNotes}</SavedNotesText>
+                        </div>
+                      ) : (
+                        <>
+                          <NotesTextArea
+                            value={notes}
+                            name="notes"
+                            placeholder="Notes"
+                            onChange={({ target }) => setNotes(target.value)}
+                          />
+                          <Button
+                            disabled={!notes && !isEditNotes}
+                            onClick={() => handleSaveNotes(row.id, logItemNotes[row.id]?.id || '')}
+                          >
+                            Save
+                          </Button>
+                        </>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </Fragment>
+            )
+          })}
         </TableBody>
       </Table>
     </TableContainer>

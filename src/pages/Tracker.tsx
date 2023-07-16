@@ -11,28 +11,11 @@ const LogbookWrapper = styled(Wrapper)`
   margin-top: 15px;
 `;
 
-type sheetObj = {
-  Date: string;
-  Weight: string
-};
-
-const weightSheetData: sheetObj[] = [
-  {Date: '2023/04/21', Weight: '65.4'},
-  {Date: '2sdf1', Weight: '65.4'},
-  {Date: '2023/02/20', Weight: '66.4'},
-  {Date: '2023/03/11', Weight: '66.8'},
-  {Date: '2023/05/10', Weight: '64.9'},
-  {Date: '2023/06/27', Weight: '65.4'},
-];
-
 const Tracker = (): ReactElement => {
-  const [selectedDate, setSelectedDate] = useState<string>('');
   const [chartType, setChartType] = useState<string>('absolute');
   const lineColors = ['#1F77B4', '#ff7f0e', '#2ca02c', '#9467bd', '#bcbd22'];
 
-
-  const showWeightLine = chartType === 'bodyWeight'
-  console.log(showWeightLine)
+  const showWeightLine = chartType === 'bodyWeight';
 
   const sheetsObj = {
     apiKey: process.env.REACT_APP_SHEETS_API_KEY || '',
@@ -70,8 +53,6 @@ const Tracker = (): ReactElement => {
 
   // TODO CustomContentOfTooltip ??  - notes column on spreadsheet and include in tooltip
 
-  // TODO bw adjustment get two closest dates then by day create interpolated by divided difference by number of days from ...
-
   let chartData: Record<string, string | number>[] = [];
   for (let row of sheetData) {
     const { Date: date, Weight: weight, Reps: reps } = row;
@@ -107,32 +88,39 @@ const Tracker = (): ReactElement => {
       }
       bwData.push({ time, weight });
     }
-    console.log(bwData)
-    const slope = linearRegression(bwData, 'time', 'weight')
-    console.log(slope(1668729600000))
   }
-  for (let record of chartData.slice(0,1)) {
-    const recordDate = new Date(record.time);
-    console.log(new Date(record.time))
-
-    const beforeTime = new Date(recordDate.setDate(recordDate.getDate() - 28)).getTime()
-    const afterTime = new Date(recordDate.setDate(recordDate.getDate() + 28)).getTime()
-    console.log(new Date(beforeTime))
-    console.log(new Date(afterTime))
-
-    const bwRecs = [];
-    for (let bwRec of bwData) {
-      if (bwRec.time >= beforeTime && bwRec.time <= afterTime) {
-        bwRecs.push({...bwRec, time: new Date(bwRec.time)})
-      }
-    }
-
-    console.log(bwRecs)
-
-  }
-
 
   const dataKeys = ['1r', '2r', '3r', '4r', '5r'];
+
+  if (showWeightLine) {
+    const newChartData: Record<string, string | number>[] = [];
+    for (let record of chartData) {
+      const recordDate = new Date(record.time);
+      const beforeTime = new Date(recordDate.setDate(recordDate.getDate() - 28)).getTime();
+      const afterTime = new Date(recordDate.setDate(recordDate.getDate() + 28)).getTime();
+      const bwRecs = [];
+      for (let bwRec of bwData) {
+        if (bwRec.time >= beforeTime && bwRec.time <= afterTime) {
+          bwRecs.push({ ...bwRec, time: bwRec.time });
+        }
+      }
+      if (!!bwRecs.length && bwRecs.length > 3) {
+        const calcBodyWeight = linearRegression(bwRecs, 'time', 'weight');
+        const bodyWeight = calcBodyWeight(record.time);
+        if (!isNaN(bodyWeight)) {
+          const newObj: Record<string, string | number> = { time: record.time };
+          for (let [key, value] of Object.entries(record)) {
+            if (dataKeys.includes(key) && typeof value === 'string' && !isNaN(parseFloat(value))) {
+              value = ((parseFloat(value) / bodyWeight) * 100).toFixed(2);
+              newObj[key] = value;
+            }
+          }
+          newChartData.push({ ...newObj, bodyWeight: bodyWeight.toFixed(2) });
+        }
+      }
+    }
+    chartData = newChartData;
+  }
 
   return (
     <LogbookWrapper>
@@ -170,6 +158,15 @@ const Tracker = (): ReactElement => {
             stroke={getColorForIndex(ind, lineColors)}
           />
         ))}
+        {showWeightLine && (
+          <Line
+            dataKey={'bodyWeight'}
+            connectNulls
+            dot={false}
+            stroke={'#7d8fa4'}
+            strokeDasharray={"3 3"}
+          />
+        )}
       </LineChart>
     </LogbookWrapper>
   )

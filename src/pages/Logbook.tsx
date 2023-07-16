@@ -94,7 +94,8 @@ const Logbook = (): ReactElement => {
     route: obj['Climb name'],
     grade: obj['Grade'],
     date: obj['Date'],
-    crag: obj['Crag name']
+    crag: obj['Crag name'],
+    notes: obj['Notes']
   }));
 
   logData = logData.filter((obj: LogItem) => !!obj.grade && !!obj.date);

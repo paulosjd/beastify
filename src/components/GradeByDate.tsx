@@ -24,7 +24,7 @@ export default function GradeByDate({ chartData, grades, setSelectedDate,  }: Gr
 
   return (
     <BarChart
-      width={chartData.length > 10 ? 1200 : 800}
+      width={chartData.length > 7 ? 1200 : 800}
       height={500}
       data={chartData}
       onClick={({activeLabel}) => handleChartClick(activeLabel)}
