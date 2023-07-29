@@ -45,6 +45,11 @@ export default function Home(): ReactElement {
           <Button>Tracker</Button>
         </Link>
       </Box>
+      <Box component="span" sx={{ p: 4, border: '1px solid #1976d2', borderRadius: 3, mt: 3 }}>
+        <Link to="/climbs">
+          <Button>Climbs To Do</Button>
+        </Link>
+      </Box>
     </HomeWrapper>
   )
 }

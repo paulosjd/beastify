@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import styled from "styled-components";
 import Navbar from "./components/Navbar";
 import Articles from "./pages/Articles";
+import Climbs from "./pages/Climbs";
 import Home from "./pages/Home";
 import Logbook from "./pages/Logbook";
 import Login from "./pages/Login";
@@ -28,6 +29,7 @@ function App() {
           <Route exact path="/login" component={Login} />
           <Route exact path="/register" component={Signup} />
           <Route exact path="/tracker" component={Tracker} />
+          <Route exact path="/climbs" component={Climbs} />
           <Redirect path="*" to="/home" />
         </Switch>
       </AppWrapper>

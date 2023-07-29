@@ -7,6 +7,7 @@ import { getColorForIndex, dateFromTimestamp, linearRegression } from "../lib/he
 import { NoDataParagraph, Wrapper } from "../components/StyledComponents";
 import styled from "styled-components";
 import TrackerOptions from "../components/TrackerOptions";
+import type { Payload } from "recharts/types/component/DefaultLegendContent";
 
 const LogbookWrapper = styled(Wrapper)`
   margin-top: 15px;
@@ -134,7 +135,7 @@ const Tracker = (): ReactElement => {
           <p className="label" style={{ color: '#717171', margin: 8 }}>{dateFromTimestamp(label)}</p>
           <div>
             {payload.filter((pld => pld.dataKey !== 'bodyWeight')).map((pld) => (
-                <div style={{ display: "inline-block", verticalAlign: 'top' }}>
+                <div key={pld.dataKey} style={{ display: "inline-block", verticalAlign: 'top' }}>
                   <>
                     <div style={{ color: pld.stroke, paddingLeft: 10, paddingRight: 10 }}>{`${pld.value} ${chartType === 'bodyWeight' ? '%' : 'kg'}`}</div>
                     <div style={{ color: pld.stroke, marginTop: 6 }}>
@@ -152,6 +153,15 @@ const Tracker = (): ReactElement => {
       );
     }
     return null;
+  };
+
+  const renderLegendText = (value: string, entry: Payload) => {
+    const { color } = entry;
+    return (
+      <span style={{ color, padding: 10 }}>
+        {value.replace('r', ' reps').replace('bodyWeight', 'Weight (kg)')}
+      </span>
+    );
   };
 
   return (
@@ -181,7 +191,7 @@ const Tracker = (): ReactElement => {
         />
         <YAxis />
         <Tooltip content={<CustomTooltip />} />
-        <Legend />
+        <Legend formatter={renderLegendText} />
         {dataKeys.map((item, ind) => (
           <Line
             key={item}
