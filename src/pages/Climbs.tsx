@@ -1,15 +1,16 @@
-import React, { ReactElement, useState } from "react";
-import useGoogleSheets from "use-google-sheets";
-import CircularProgress from '@mui/material/CircularProgress';
-import { Line, LineChart, CartesianGrid, Legend, Tooltip, XAxis, YAxis, TooltipProps } from "recharts";
-import { ValueType, NameType, } from 'recharts/types/component/DefaultTooltipContent';
-import { getColorForIndex, dateFromTimestamp, linearRegression } from "../lib/helpers";
-import { NoDataParagraph, Wrapper } from "../components/StyledComponents";
+import React, { ReactElement, useContext, useEffect, useState } from "react";
 import styled from "styled-components";
-import TrackerOptions from "../components/TrackerOptions";
+import { AppContext } from "../AppContext";
+import { ArticleFilterParamsType } from "../lib/types";
+import Button from "../components/Button";
+import Input from "../components/Input";
+import TextArea from "../components/TextArea";
+import SavedCrag from "../components/SavedCrag";
+import ArticleSearch from "../components/ArticleSearch";
+import { Spacing, Wrapper, SavedItemWrapper } from "../components/StyledComponents";
 
-const LogbookWrapper = styled(Wrapper)`
-  margin-top: 15px;
+const TodoClimbsWrapper = styled(Wrapper)`
+  max-width: 1320px;
 `;
 
 const TooltipWrapper = styled.div`
@@ -18,14 +19,100 @@ const TooltipWrapper = styled.div`
   padding: 2px 4px 0 4px;
 `;
 
+const AddItemButton = styled(Button)`
+  min-height: 45px;
+`;
+
+const AddItemWrapper = styled.div`
+  margin-top: 25px;
+  margin-bottom: 10px;
+  width: 100%
+`;
+
 const Climbs = (): ReactElement => {
 
-  const [chartType, setChartType] = useState<string>('absolute');
+  const [editCragId, setEditCragId] = useState<string>("");
+  const [viewCragId, setViewCragId] = useState<string>("");
+  const [geoCoordinates, setGeoCoordinates] = useState<string>("");
+  const [cragName, setCragName] = useState<string>("");
+  const [conditions, setConditions] = useState<string>("");
+  const { addTodoCrag, getSavedTodoCrags, savedTodoCrags } = useContext(AppContext);
+  const [isAddCrag, setIsAddCrag] = useState<boolean>(false);
+
+  useEffect(() => {
+    getSavedTodoCrags();
+    // eslint-disable-next-line
+  }, []);
+
+
+  const handleSubmit = async () => {
+    await addTodoCrag({ name: cragName, geoCoordinates, conditions });
+    setGeoCoordinates("");
+    setCragName("");
+    setConditions("");
+    setIsAddCrag(false);
+    await getSavedTodoCrags();
+  }
+
+  console.log(savedTodoCrags)
+
 
   return (
-    <LogbookWrapper>
-      <p>foo</p>
-    </LogbookWrapper>
+    <TodoClimbsWrapper>
+      <SavedItemWrapper>
+
+        {savedTodoCrags.map((item) => (
+          <SavedCrag
+            key={item.id}
+            savedItem={item}
+            editItemId={editCragId}
+            setEditItemId={setEditCragId}
+            viewItemId={viewCragId}
+            setViewItemId={setViewCragId}
+          />
+        ))}
+      </SavedItemWrapper>
+      <AddItemWrapper>
+        <Spacing mt="10px">
+          <AddItemButton
+            style={{ display: isAddCrag ? 'none' : undefined }}
+            onClick={() => setIsAddCrag(true)}
+          >
+            Add Crag
+          </AddItemButton>
+        </Spacing>
+        {isAddCrag && (
+          <div>
+            <Input
+              value={cragName}
+              name="cragName"
+              placeholder="Crag Name"
+              onChange={({ target }) => setCragName(target.value)}
+            />
+            <Input
+              value={geoCoordinates}
+              name="geoCoordinates"
+              placeholder="GeoCoordinates e.g. 50.4706,-3.50215"
+              onChange={({ target }) => setGeoCoordinates(target.value)}
+            />
+            <TextArea
+              value={conditions}
+              name="conditions"
+              placeholder="Access and Conditions"
+              onChange={({ target }) => setConditions(target.value)}
+            />
+            <Spacing mt="10px">
+              <AddItemButton
+                disabled={false}
+                onClick={handleSubmit}
+              >
+                Save
+              </AddItemButton>
+            </Spacing>
+          </div>
+        )}
+      </AddItemWrapper>
+    </TodoClimbsWrapper>
   )
 }
 

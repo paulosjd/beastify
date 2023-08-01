@@ -30,3 +30,8 @@ export const NoDataParagraph = styled.p`
   color: #1E2828FF;
   margin-top: 40px;
 `;
+
+export const SavedItemWrapper = styled.div`
+  width: 100%;
+  overflow: auto;
+`;

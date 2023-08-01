@@ -4,3 +4,10 @@
     cursor: pointer;
     width: 80%;
 }
+
+.cragNameElem {
+    margin: 10px 0 6px;
+    cursor: pointer;
+    width: 80%;
+    font-size: 18px;
+}

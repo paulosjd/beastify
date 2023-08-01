@@ -20,13 +20,19 @@ export interface SavedArticleType extends ArticleType {
   itemId: string;
 }
 
-export interface FilterParamsType {
+export interface ArticleFilterParamsType {
   startDate:  Dayjs | null;
   endDate:  Dayjs | null;
   keyword:  string | null;
 }
 
-export type NotesByLogItemKeyType = Record<string, {id: string, notes: string}>
+export type TodoCragType = {
+  name: string;
+  geoCoordinates: string;
+  conditions: string;
+}
+
+export type NotesByLogItemKeyType = Record<string, { id: string, notes: string }>
 
 export interface LogItemNotesType {
   logItemId: string;
@@ -34,5 +40,9 @@ export interface LogItemNotesType {
 }
 
 export interface SavedLogItemNotesType extends LogItemNotesType {
+  id: string;
+}
+
+export interface SavedTodoCragType extends TodoCragType {
   id: string;
 }

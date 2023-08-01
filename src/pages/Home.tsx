@@ -6,6 +6,7 @@ import { AppContext } from "../AppContext";
 import Button from "../components/Button";
 import { Box } from "@mui/material";
 import { Wrapper } from "../components/StyledComponents";
+import Articles from "./Articles";
 
 const HomeWrapper = styled(Wrapper)`
   margin-top: 30px;
@@ -24,32 +25,21 @@ export default function Home(): ReactElement {
     // eslint-disable-next-line
   }, []);
 
-  // TODO projects ??
-
-  // TODO make below DRY using .map
+  const itemsList = ['Articles', 'Logbook', 'Tracker', 'Climbs To Do']
 
   return (
     <HomeWrapper>
-      <Box component="span" sx={{ p: 4, border: '1px solid #1976d2', borderRadius: 3 }}>
-        <Link to="/articles">
-          <Button>Articles</Button>
-        </Link>
-      </Box>
-      <Box component="span" sx={{ p: 4, border: '1px solid #1976d2', borderRadius: 3, mt: 3 }}>
-        <Link to="/logbook">
-          <Button>Logbook</Button>
-        </Link>
-      </Box>
-      <Box component="span" sx={{ p: 4, border: '1px solid #1976d2', borderRadius: 3, mt: 3 }}>
-        <Link to="/tracker">
-          <Button>Tracker</Button>
-        </Link>
-      </Box>
-      <Box component="span" sx={{ p: 4, border: '1px solid #1976d2', borderRadius: 3, mt: 3 }}>
-        <Link to="/climbs">
-          <Button>Climbs To Do</Button>
-        </Link>
-      </Box>
+      {itemsList.map((label, ind) => (
+        <Box
+          component="span"
+          key={label}
+          sx={{ p: 4, border: '1px solid #1976d2', borderRadius: 3, mt: ind !== 0 ? 3 : undefined }}
+        >
+          <Link to={`/${label.split(' ')[0].toLowerCase()}`}>
+            <Button>{label}</Button>
+          </Link>
+        </Box>
+      ))}
     </HomeWrapper>
   )
 }

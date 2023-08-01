@@ -2,22 +2,17 @@ import React, { ReactElement, useContext, useEffect, useState } from "react";
 import 'dayjs/locale/de';
 import styled from "styled-components";
 import { AppContext } from "../AppContext";
-import { FilterParamsType } from "../lib/types";
+import { ArticleFilterParamsType } from "../lib/types";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import ArticleTags from "../components/ArticleTags";
 import TextArea from "../components/TextArea";
 import SavedArticle from "../components/SavedArticle";
-import Search from "../components/Search";
-import { Spacing, Wrapper } from "../components/StyledComponents";
+import ArticleSearch from "../components/ArticleSearch";
+import { Spacing, Wrapper, SavedItemWrapper } from "../components/StyledComponents";
 
 const ArticlesWrapper = styled(Wrapper)`
   max-width: 1320px;
-`;
-
-const SavedItemWrapper = styled.div`
-  width: 100%;
-  overflow: auto;
 `;
 
 const AddItemButton = styled(Button)`
@@ -44,11 +39,19 @@ export default function Articles(): ReactElement {
   const [tags, setTags] = useState<string[]>([]);
   const [editItemId, setEditItemId] = useState<string>("");
   const [viewItemId, setViewItemId] = useState<string>("");
-  const [filterParams, setFilterParams] = useState<FilterParamsType>(filterParamsInitialState);
-  const { addArticle, getSavedArticles, savedArticles, currentUser } = useContext(AppContext);
+  const [filterParams, setFilterParams] = useState<ArticleFilterParamsType>(filterParamsInitialState);
+  const { addArticle, getSavedArticles, savedArticles, currentUser, handleAuthChange } = useContext(AppContext);
 
   useEffect(() => {
     getSavedArticles();
+    // eslint-disable-next-line
+  }, []);
+
+  useEffect(() => {
+    handleAuthChange({
+      err: () => {
+      },
+    });
     // eslint-disable-next-line
   }, []);
 
@@ -67,7 +70,7 @@ export default function Articles(): ReactElement {
   }, []);
 
   const handleSubmit = async () => {
-    await addArticle({title, summary, url, keywords: tags});
+    await addArticle({ title, summary, url, keywords: tags });
     setTitle("");
     setSummary("");
     setUrl("");
@@ -79,7 +82,7 @@ export default function Articles(): ReactElement {
   return (
     <ArticlesWrapper>
       <SavedItemWrapper>
-        <Search
+        <ArticleSearch
           filterParams={filterParams}
           setFilterParams={setFilterParams}
         />

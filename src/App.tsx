@@ -10,6 +10,7 @@ import Logbook from "./pages/Logbook";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Tracker from "./pages/Tracker";
+import PrivateRoute from "./components/PrivateRoute"
 
 const AppWrapper = styled.div`
   max-width: 1420px;
@@ -18,18 +19,21 @@ const AppWrapper = styled.div`
 `;
 
 function App() {
+
   return (
     <BrowserRouter>
       <Navbar />
       <AppWrapper>
         <Switch>
           <Route exact path="/home" component={Home} />
-          <Route exact path="/articles" component={Articles} />
-          <Route exact path="/logbook" component={Logbook} />
           <Route exact path="/login" component={Login} />
           <Route exact path="/register" component={Signup} />
           <Route exact path="/tracker" component={Tracker} />
           <Route exact path="/climbs" component={Climbs} />
+          <PrivateRoute path="/articles" component={Articles} />
+          <PrivateRoute path="/logbook" component={Logbook} />
+          <PrivateRoute path="/tracker" component={Tracker} />
+          <PrivateRoute path="/climbs" component={Climbs} />
           <Redirect path="*" to="/home" />
         </Switch>
       </AppWrapper>

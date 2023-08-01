@@ -11,6 +11,7 @@ import { Spacing } from "./StyledComponents";
 import TextArea from "./TextArea";
 import styles from "./styles.module.css";
 import ArticleTags from "./ArticleTags";
+import ConfirmDelete from "./ConfirmDelete";
 
 const Wrapper = styled.div`
   width: 100%;
@@ -30,7 +31,7 @@ const RowMargin = styled(Row)`
     margin-bottom: 8px;
 `;
 
-interface savedItemProps {
+type SavedItemProps = {
   savedItem: SavedArticleType;
   editItemId: string;
   viewItemId: string;
@@ -38,9 +39,9 @@ interface savedItemProps {
   setViewItemId: (itemId: string) => void;
   setEditItemId: (itemId: string) => void;
   setTags: (newTags: string[]) => void;
-}
+};
 
-export default function SavedArticle(props: savedItemProps): ReactElement {
+export default function SavedArticle(props: SavedItemProps): ReactElement {
   const {
     savedItem: { itemId, title, summary, url, keywords }, tags, editItemId, setEditItemId, viewItemId, setViewItemId, setTags
   } = props;
@@ -48,9 +49,15 @@ export default function SavedArticle(props: savedItemProps): ReactElement {
   const [itemSummary, setItemSummary] = useState<string>(summary);
   const [itemUrl, setItemUrl] = useState<string>(url);
   const [itemKeywords, setItemKeywords] = useState<string[]>(keywords);
+  const [openConfirmDelete, setOpenConfirmDelete] = useState<boolean>(false);
   const { getSavedArticles, updateSavedArticle, deleteSavedArticle } = React.useContext(AppContext);
   const isView = viewItemId === itemId;
   const itemTags = Array.from(new Set(itemKeywords.concat(tags)));
+
+  const handleDelete = async () => {
+    await deleteSavedArticle(itemId);
+    await getSavedArticles();
+  };
 
   if (itemId === editItemId) {
     return (
@@ -99,16 +106,16 @@ export default function SavedArticle(props: savedItemProps): ReactElement {
             </Button>
           </Spacing>
           <Spacing fitContent mx="5px" my="5px">
-            <Button
-              onClick={async () => {
-                await deleteSavedArticle(itemId);
-                await getSavedArticles();
-              }}
-            >
+            <Button onClick={() => setOpenConfirmDelete(true)}>
               Delete
             </Button>
           </Spacing>
         </Row>
+        <ConfirmDelete
+          handleDelete={handleDelete}
+          open={openConfirmDelete}
+          onClose={() => setOpenConfirmDelete(false)}
+        />
       </Wrapper>
     );
   }
@@ -164,16 +171,6 @@ export default function SavedArticle(props: savedItemProps): ReactElement {
             Edit
           </Button>
         </Spacing>
-        <Spacing fitContent my="5px" float="right">
-          <Button
-            onClick={async () => {
-              await deleteSavedArticle(itemId);
-              await getSavedArticles();
-            }}
-          >
-            Delete
-          </Button>
-        </Spacing>
       </Row>
       {isView && itemSummary && (
         <Row>
@@ -193,9 +190,6 @@ export default function SavedArticle(props: savedItemProps): ReactElement {
           setTags={setTags}
         />
       )}
-      <Row>
-
-      </Row>
     </Wrapper>
   );
 }

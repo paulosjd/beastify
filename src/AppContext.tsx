@@ -26,11 +26,13 @@ import { auth, db, storage } from "./firebase";
 import { v4 as uuid } from "uuid";
 import {
   ArticleType,
-  FilterParamsType,
+  ArticleFilterParamsType,
   SavedArticleType,
   LogItemNotesType,
   SavedLogItemNotesType,
-  NotesByLogItemKeyType
+  NotesByLogItemKeyType,
+  TodoCragType,
+  SavedTodoCragType
 } from "./lib/types";
 
 interface Props {
@@ -64,16 +66,19 @@ interface contextTypes {
   loading: boolean;
   currentUser: UserType | null;
   savedArticles: SavedArticleType[];
+  savedTodoCrags: SavedTodoCragType[];
   logItemNotes: NotesByLogItemKeyType;
   logInUser(email: string, password: string): Promise<void>;
   signInWithGoogle(): Promise<void>;
   registerUser(data: RegistrationType): Promise<void>;
   updateAvatar(file: { image: Blob; ext: string }): Promise<void>;
   signOutUser(): Promise<void>;
+  addTodoCrag(params: TodoCragType): Promise<void>;
+  getSavedTodoCrags(): Promise<void>;
   addArticle(params: ArticleType): Promise<void>;
   updateSavedArticle(params: EditedArticleType): Promise<void>;
   deleteSavedArticle(id: string): Promise<void>;
-  getSavedArticles(filterParams?: FilterParamsType): Promise<void>;
+  getSavedArticles(filterParams?: ArticleFilterParamsType): Promise<void>;
   addLogItemNotes(params: LogItemNotesType): Promise<void>;
   updateLogItemNotes(params: SavedLogItemNotesType): Promise<void>;
   deleteLogItemNotes(id: string): Promise<void>;
@@ -85,12 +90,15 @@ const contextDefaultVal: contextTypes = {
   loading: false,
   currentUser: null,
   savedArticles: [],
+  savedTodoCrags: [],
   logItemNotes: {},
   logInUser: async () => {},
   signInWithGoogle: async () => {},
   registerUser: async () => {},
   updateAvatar: async () => {},
   signOutUser: async () => {},
+  addTodoCrag: async () => {},
+  getSavedTodoCrags: async () => {},
   addArticle: async () => {},
   updateSavedArticle: async () => {},
   deleteSavedArticle: async () => {},
@@ -107,6 +115,7 @@ export const AppContext = React.createContext<contextTypes>(contextDefaultVal);
 export default function AppContextProvider({ children }: Props): ReactElement {
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
   const [loading, setLoading] = useState(false);
+  const [savedTodoCrags, setSavedTodoCrags] = useState<SavedTodoCragType[]>([]);
   const [savedArticles, setSavedArticles] = useState<SavedArticleType[]>([]);
   const [savedLogItemNotes, setSavedLogItemNotes] = useState<NotesByLogItemKeyType>({});
 
@@ -192,6 +201,60 @@ export default function AppContextProvider({ children }: Props): ReactElement {
         params.cb && params.cb();
       }
     });
+  };
+
+  const addTodoCrag = async (params: TodoCragType) => {
+    try {
+      const docRef = doc(
+        db,
+        "todoCrag",
+        uuid()
+      );
+      const userId = auth.currentUser;
+      if (userId !== null) {
+        await setDoc(docRef, {
+          userId: userId.uid,
+          name: params.name,
+          geoCoordinates: params.geoCoordinates,
+          conditions: params.conditions
+        });
+      }
+    } catch (error) { }
+  };
+
+  const getSavedTodoCrags = async () => {
+    try {
+      if (auth.currentUser !== null) {
+        const userId = auth.currentUser.uid;
+        const q = query(
+          collection(db, "todoCrag"),
+          where("userId", "==", userId)
+        );
+
+        // reset the saved items value
+        setSavedTodoCrags([]);
+        const cragsCollection: SavedTodoCragType[] = [];
+
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((doc) => {
+          const { name, geoCoordinates, conditions } = doc.data();
+          cragsCollection.push({
+            id: doc.id,
+            name,
+            geoCoordinates,
+            conditions
+          });
+        });
+        // const notesByLogItemId = notesCollection.reduce((acc, obj) => {
+        //   const { logItemId, id, notes } = obj;
+        //   return {
+        //     ...acc,
+        //     [logItemId]: { id, notes }
+        //   }
+        // }, {})
+        setSavedTodoCrags(cragsCollection);
+      }
+    } catch (error) { console.log(error) }
   };
 
   const addLogItemNotes = async (params: LogItemNotesType) => {
@@ -288,7 +351,9 @@ export default function AppContextProvider({ children }: Props): ReactElement {
     } catch (error) { }
   };
 
-  const getSavedArticles = async (filterParams?: FilterParamsType) => {
+  const getSavedArticles = async (filterParams?: ArticleFilterParamsType) => {
+    console.log(auth)
+    console.log(auth)
     try {
       if (auth.currentUser !== null) {
         const userId = auth.currentUser.uid;
@@ -380,6 +445,9 @@ export default function AppContextProvider({ children }: Props): ReactElement {
         updateSavedArticle,
         deleteSavedArticle,
         signOutUser,
+        addTodoCrag,
+        getSavedTodoCrags,
+        savedTodoCrags,
         logItemNotes: savedLogItemNotes,
         addLogItemNotes,
         getLogItemNotes,
