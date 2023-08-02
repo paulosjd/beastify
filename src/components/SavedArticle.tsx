@@ -50,13 +50,25 @@ export default function SavedArticle(props: SavedItemProps): ReactElement {
   const [itemUrl, setItemUrl] = useState<string>(url);
   const [itemKeywords, setItemKeywords] = useState<string[]>(keywords);
   const [openConfirmDelete, setOpenConfirmDelete] = useState<boolean>(false);
-  const { getSavedArticles, updateSavedArticle, deleteSavedArticle } = React.useContext(AppContext);
+  const { getSavedArticles, updateSavedArticle, deleteSavedItem } = React.useContext(AppContext);
   const isView = viewItemId === itemId;
   const itemTags = Array.from(new Set(itemKeywords.concat(tags)));
 
   const handleDelete = async () => {
-    await deleteSavedArticle(itemId);
+    await deleteSavedItem(itemId, 'article');
     await getSavedArticles();
+  };
+
+  const handleSave = () => {
+    updateSavedArticle({
+      id: itemId,
+      newTitle: itemTitle,
+      newSummary: itemSummary,
+      newUrl: itemUrl,
+      newKeywords: itemTags
+    });
+    setEditItemId('');
+    setViewItemId(itemId);
   };
 
   if (itemId === editItemId) {
@@ -91,16 +103,7 @@ export default function SavedArticle(props: SavedItemProps): ReactElement {
           <Spacing fitContent mx="5px" my="5px">
             <Button
               disabled={!itemTitle}
-              onClick={() => {
-                updateSavedArticle({
-                  id: itemId,
-                  newTitle: itemTitle,
-                  newSummary: itemSummary,
-                  newUrl: itemUrl,
-                  newKeywords: itemTags
-                });
-                setEditItemId('');
-              }}
+              onClick={handleSave}
             >
               Save
             </Button>

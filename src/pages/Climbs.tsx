@@ -36,14 +36,16 @@ const Climbs = (): ReactElement => {
   const [geoCoordinates, setGeoCoordinates] = useState<string>("");
   const [cragName, setCragName] = useState<string>("");
   const [conditions, setConditions] = useState<string>("");
-  const { addTodoCrag, getSavedTodoCrags, savedTodoCrags } = useContext(AppContext);
+  const { addTodoCrag, getSavedTodoCrags, savedTodoCrags, getSavedTodoClimbs, savedTodoClimbs } = useContext(AppContext);
   const [isAddCrag, setIsAddCrag] = useState<boolean>(false);
 
   useEffect(() => {
     getSavedTodoCrags();
+    getSavedTodoClimbs();
     // eslint-disable-next-line
   }, []);
 
+  console.log(savedTodoClimbs)
 
   const handleSubmit = async () => {
     await addTodoCrag({ name: cragName, geoCoordinates, conditions });
@@ -53,9 +55,6 @@ const Climbs = (): ReactElement => {
     setIsAddCrag(false);
     await getSavedTodoCrags();
   }
-
-  console.log(savedTodoCrags)
-
 
   return (
     <TodoClimbsWrapper>

@@ -28,11 +28,18 @@ import {
   ArticleType,
   ArticleFilterParamsType,
   SavedArticleType,
+  EditedArticleType,
+  EditedCragType,
   LogItemNotesType,
   SavedLogItemNotesType,
   NotesByLogItemKeyType,
+  RegistrationType,
   TodoCragType,
-  SavedTodoCragType
+  SavedTodoCragType,
+  SavedTodoClimbType,
+  TodoClimbType,
+  UserType
+
 } from "./lib/types";
 
 interface Props {
@@ -42,31 +49,12 @@ interface Props {
     | React.ReactPortal;
 }
 
-interface UserType {
-  displayName: string | null;
-  userId: string;
-  avatar?: string | null;
-}
-
-interface RegistrationType {
-  displayName: string;
-  email: string;
-  password: string;
-}
-
-interface EditedArticleType {
-  id: string;
-  newTitle: string;
-  newSummary: string;
-  newUrl: string;
-  newKeywords: string[];
-}
-
-interface contextTypes {
+interface ContextType {
   loading: boolean;
   currentUser: UserType | null;
   savedArticles: SavedArticleType[];
   savedTodoCrags: SavedTodoCragType[];
+  savedTodoClimbs: SavedTodoClimbType[];
   logItemNotes: NotesByLogItemKeyType;
   logInUser(email: string, password: string): Promise<void>;
   signInWithGoogle(): Promise<void>;
@@ -74,10 +62,13 @@ interface contextTypes {
   updateAvatar(file: { image: Blob; ext: string }): Promise<void>;
   signOutUser(): Promise<void>;
   addTodoCrag(params: TodoCragType): Promise<void>;
+  updateSavedTodoCrag(params: EditedCragType): Promise<void>;
   getSavedTodoCrags(): Promise<void>;
+  addTodoClimb(params: TodoClimbType): Promise<void>;
+  getSavedTodoClimbs(): Promise<void>;
   addArticle(params: ArticleType): Promise<void>;
   updateSavedArticle(params: EditedArticleType): Promise<void>;
-  deleteSavedArticle(id: string): Promise<void>;
+  deleteSavedItem(id: string, docType: string): Promise<void>;
   getSavedArticles(filterParams?: ArticleFilterParamsType): Promise<void>;
   addLogItemNotes(params: LogItemNotesType): Promise<void>;
   updateLogItemNotes(params: SavedLogItemNotesType): Promise<void>;
@@ -86,11 +77,12 @@ interface contextTypes {
   handleAuthChange: (params: { cb?: VoidFunction; err?: VoidFunction }) => void;
 }
 
-const contextDefaultVal: contextTypes = {
+const contextDefaultVal: ContextType = {
   loading: false,
   currentUser: null,
   savedArticles: [],
   savedTodoCrags: [],
+  savedTodoClimbs: [],
   logItemNotes: {},
   logInUser: async () => {},
   signInWithGoogle: async () => {},
@@ -99,9 +91,12 @@ const contextDefaultVal: contextTypes = {
   signOutUser: async () => {},
   addTodoCrag: async () => {},
   getSavedTodoCrags: async () => {},
+  updateSavedTodoCrag: async () => {},
+  addTodoClimb: async () => {},
+  getSavedTodoClimbs: async () => {},
   addArticle: async () => {},
   updateSavedArticle: async () => {},
-  deleteSavedArticle: async () => {},
+  deleteSavedItem: async () => {},
   getSavedArticles: async () => {},
   addLogItemNotes: async () => {},
   updateLogItemNotes: async () => {},
@@ -110,12 +105,13 @@ const contextDefaultVal: contextTypes = {
   handleAuthChange: () => {},
 };
 
-export const AppContext = React.createContext<contextTypes>(contextDefaultVal);
+export const AppContext = React.createContext<ContextType>(contextDefaultVal);
 
 export default function AppContextProvider({ children }: Props): ReactElement {
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
   const [loading, setLoading] = useState(false);
   const [savedTodoCrags, setSavedTodoCrags] = useState<SavedTodoCragType[]>([]);
+  const [savedTodoClimbs, setSavedTodoClimbs] = useState<SavedTodoClimbType[]>([]);
   const [savedArticles, setSavedArticles] = useState<SavedArticleType[]>([]);
   const [savedLogItemNotes, setSavedLogItemNotes] = useState<NotesByLogItemKeyType>({});
 
@@ -245,16 +241,72 @@ export default function AppContextProvider({ children }: Props): ReactElement {
             conditions
           });
         });
-        // const notesByLogItemId = notesCollection.reduce((acc, obj) => {
-        //   const { logItemId, id, notes } = obj;
-        //   return {
-        //     ...acc,
-        //     [logItemId]: { id, notes }
-        //   }
-        // }, {})
         setSavedTodoCrags(cragsCollection);
       }
     } catch (error) { console.log(error) }
+  };
+
+  const addTodoClimb = async (params: TodoClimbType) => {
+    const { name, cragId, grade, notes } = params;
+    try {
+      const docRef = doc(
+        db,
+        'todoClimb',
+        uuid()
+      );
+      const userId = auth.currentUser;
+      if (userId !== null) {
+        await setDoc(docRef, {
+          userId: userId.uid,
+          name,
+          cragId,
+          grade,
+          notes
+        });
+      }
+    } catch (error) { }
+  };
+
+  const getSavedTodoClimbs = async () => {
+    try {
+      if (auth.currentUser !== null) {
+        const userId = auth.currentUser.uid;
+        const q = query(
+          collection(db, "todoClimb"),
+          where("userId", "==", userId)
+        );
+
+        // reset the saved items value
+        setSavedTodoClimbs([]);
+        const climbsCollection: SavedTodoClimbType[] = [];
+
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((doc) => {
+          const { name, cragId, grade, notes } = doc.data();
+          climbsCollection.push({
+            id: doc.id,
+            name,
+            cragId,
+            grade,
+            notes
+          });
+        });
+        setSavedTodoClimbs(climbsCollection);
+      }
+    } catch (error) { console.log(error) }
+  };
+
+  const updateSavedTodoCrag = async (params: EditedCragType) => {
+    const { id, name, newGeocoordinates: geoCoordinates, newConditions: conditions } = params;
+    try {
+      const docRef = doc(db, 'todoCrag', id);
+      await updateDoc(docRef, {
+        id,
+        name,
+        geoCoordinates,
+        conditions,
+      });
+    } catch (error) { }
   };
 
   const addLogItemNotes = async (params: LogItemNotesType) => {
@@ -352,8 +404,6 @@ export default function AppContextProvider({ children }: Props): ReactElement {
   };
 
   const getSavedArticles = async (filterParams?: ArticleFilterParamsType) => {
-    console.log(auth)
-    console.log(auth)
     try {
       if (auth.currentUser !== null) {
         const userId = auth.currentUser.uid;
@@ -407,9 +457,7 @@ export default function AppContextProvider({ children }: Props): ReactElement {
     } catch (error) { console.log(error) }
   };
 
-  const updateSavedArticle = async (
-    params: { id: string, newTitle: string; newSummary: string; newUrl: string, newKeywords: string[] }
-  ) => {
+  const updateSavedArticle = async (params: EditedArticleType) => {
     const { id, newTitle: title, newSummary: summary, newUrl: url, newKeywords: keywords } = params;
     try {
       const docRef = doc(db, "article", id);
@@ -422,9 +470,9 @@ export default function AppContextProvider({ children }: Props): ReactElement {
     } catch (error) { }
   };
 
-  const deleteSavedArticle = async (id: string) => {
+  const deleteSavedItem = async (id: string, docType: string) => {
     try {
-      const docRef = doc(db, "article", id);
+      const docRef = doc(db, docType, id);
       await deleteDoc(docRef);
     } catch (error) { }
   };
@@ -443,11 +491,15 @@ export default function AppContextProvider({ children }: Props): ReactElement {
         addArticle,
         getSavedArticles,
         updateSavedArticle,
-        deleteSavedArticle,
+        deleteSavedItem,
         signOutUser,
         addTodoCrag,
         getSavedTodoCrags,
+        addTodoClimb,
+        getSavedTodoClimbs,
         savedTodoCrags,
+        savedTodoClimbs,
+        updateSavedTodoCrag,
         logItemNotes: savedLogItemNotes,
         addLogItemNotes,
         getLogItemNotes,

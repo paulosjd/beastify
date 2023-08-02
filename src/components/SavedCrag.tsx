@@ -10,7 +10,7 @@ import { SavedTodoCragType } from "../lib/types";
 import { Spacing } from "./StyledComponents";
 import TextArea from "./TextArea";
 import styles from "./styles.module.css";
-import ArticleTags from "./ArticleTags";
+import ConfirmDelete from "./ConfirmDelete";
 
 const Wrapper = styled.div`
   width: 100%;
@@ -26,9 +26,15 @@ export const Row = styled.div`
   justify-content: space-between;
 `;
 
-const RowMargin = styled(Row)`
-    margin-bottom: 8px;
+const ItemText = styled.p`
+  margin: 0
 `;
+
+const AddClimbButton = styled(Button)`
+  width: 200px;
+  margin: 12px 0 10px 0;
+  background-color: #1976d2;
+`
 
 type SavedCragProps = {
   savedItem: SavedTodoCragType;
@@ -43,7 +49,9 @@ export default function SavedCrag(props: SavedCragProps): ReactElement {
     savedItem: { id: itemId, name, geoCoordinates, conditions }, editItemId, setEditItemId, viewItemId, setViewItemId,
   } = props;
   const [conditionsValue, setConditionsValue] = useState<string>(conditions);
-  const { getSavedArticles, updateSavedArticle, deleteSavedArticle } = React.useContext(AppContext);
+  const [geoCoordinatesValue, setGeoCoordinatesValue] = useState<string>(geoCoordinates);
+  const [openConfirmDelete, setOpenConfirmDelete] = useState<boolean>(false);
+  const { updateSavedTodoCrag, deleteSavedItem, getSavedTodoCrags, addTodoClimb } = React.useContext(AppContext);
   const isView = viewItemId === itemId;
   const isEdit = editItemId === itemId;
 
@@ -56,13 +64,38 @@ export default function SavedCrag(props: SavedCragProps): ReactElement {
     }
   };
 
+  const handleSave = () => {
+    updateSavedTodoCrag({
+      id: itemId,
+      name,
+      newGeocoordinates: geoCoordinatesValue,
+      newConditions: conditionsValue
+    });
+    setEditItemId('');
+    setViewItemId(itemId);
+  };
+
+  const handleDelete = async () => {
+    await deleteSavedItem(itemId, 'todoCrag');
+    await getSavedTodoCrags();
+  };
+
   return (
     <Wrapper>
       <Row>
-        <h4 className={styles.cragNameElem} onClick={viewToggle}>
+        <h4 className={`${styles.titleRowElem} ${styles.font18}`} onClick={viewToggle}>
           {name}
         </h4>
-        {isView && (
+        <Spacing fitContent my="5px" float="right">
+          <IconButton
+            color="primary"
+            component="label"
+            onClick={viewToggle}
+          >
+            {isView || isEdit ? <ArrowDropUpIcon /> : <ExpandCircleDownIcon />}
+          </IconButton>
+        </Spacing>
+        {isView ? (
           <>
             <Spacing fitContent my="5px" float="right">
               <Button
@@ -74,32 +107,46 @@ export default function SavedCrag(props: SavedCragProps): ReactElement {
                 Edit
               </Button>
             </Spacing>
+          </>
+        ) : isEdit ? (
+          <>
             <Spacing fitContent my="5px" float="right">
-              <Button
-                onClick={async () => {
-                  await deleteSavedArticle(itemId);
-                  await getSavedArticles();
-                }}
-              >
+              <Button onClick={() => setOpenConfirmDelete(true)}>
                 Delete
               </Button>
             </Spacing>
+            <Spacing fitContent my="5px" float="right">
+              <Button onClick={handleSave}>
+                Save
+              </Button>
+            </Spacing>
           </>
-        )}
-        <Spacing fitContent my="5px" float="right">
-          <IconButton
-            color="primary"
-            component="label"
-            onClick={viewToggle}
-          >
-            {isView || isEdit ? <ArrowDropUpIcon /> : <ExpandCircleDownIcon />}
-          </IconButton>
-        </Spacing>
+        ) : null}
       </Row>
-      {isView && conditions && (
+      {isView && geoCoordinatesValue && (
         <Row>
-          <p><strong>Access and conditions: </strong>{conditions}</p>
+          <ItemText><strong>Geo: </strong>{geoCoordinatesValue}</ItemText>
         </Row>
+      )}
+      {isView && conditionsValue && (
+        <Row>
+          <ItemText><strong>Access and conditions: </strong>{conditionsValue}</ItemText>
+        </Row>
+      )}
+      {isView && (
+        <Row>
+          <AddClimbButton onClick={() => {}}>
+            Add climb
+          </AddClimbButton>
+        </Row>
+      )}
+      {isEdit && (
+        <Input
+          value={geoCoordinatesValue}
+          name="geoCoordinates"
+          placeholder="GeoCoordinates e.g. 50.4706,-3.50215"
+          onChange={({ target }) => setGeoCoordinatesValue(target.value)}
+        />
       )}
       {isEdit && (
         <TextArea
@@ -109,9 +156,11 @@ export default function SavedCrag(props: SavedCragProps): ReactElement {
           onChange={({ target }) => setConditionsValue(target.value)}
         />
       )}
-      <Row>
-
-      </Row>
+      <ConfirmDelete
+        handleDelete={handleDelete}
+        open={openConfirmDelete}
+        onClose={() => setOpenConfirmDelete(false)}
+      />
     </Wrapper>
   );
 }

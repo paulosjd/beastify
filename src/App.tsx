@@ -28,8 +28,6 @@ function App() {
           <Route exact path="/home" component={Home} />
           <Route exact path="/login" component={Login} />
           <Route exact path="/register" component={Signup} />
-          <Route exact path="/tracker" component={Tracker} />
-          <Route exact path="/climbs" component={Climbs} />
           <PrivateRoute path="/articles" component={Articles} />
           <PrivateRoute path="/logbook" component={Logbook} />
           <PrivateRoute path="/tracker" component={Tracker} />

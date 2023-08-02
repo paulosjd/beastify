@@ -1,13 +1,10 @@
 
 .titleRowElem {
-    margin: 10px 0 6px;
-    cursor: pointer;
-    width: 80%;
+  margin: 10px 0 6px;
+  cursor: pointer;
+  width: 85%;
 }
 
-.cragNameElem {
-    margin: 10px 0 6px;
-    cursor: pointer;
-    width: 80%;
-    font-size: 18px;
+.font18 {
+  font-size: 18px;
 }
