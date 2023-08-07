@@ -1,21 +1,18 @@
-import React, { ReactElement, useState } from "react";
-import { Link, IconButton } from "@mui/material";
+import React, { useState } from "react";
+import { IconButton } from "@mui/material";
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
+import ClearIcon from '@mui/icons-material/Clear';
 import ExpandCircleDownIcon from '@mui/icons-material/ExpandCircleDown';
-import InputLabel from '@mui/material/InputLabel';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
 import styled from "styled-components";
 import Button from "./Button";
 import Input from "./Input";
 import { AppContext } from "../AppContext";
 import { SavedTodoCragType } from "../lib/types";
-import { Spacing } from "./StyledComponents";
+import { Spacing, FormButton, FlexStartRow } from "./StyledComponents";
 import TextArea from "./TextArea";
+import ClimbForm from "./ClimbForm";
 import ConfirmDelete from "./ConfirmDelete";
-import ClimbTypeRadioButtons from "./ClimbTypeRadioButtons";
 import styles from "./styles.module.css";
-import MenuItem from "@mui/material/MenuItem";
-import { Stack, Typography } from "@mui/material";
 
 const Wrapper = styled.div`
   width: 100%;
@@ -31,46 +28,30 @@ export const Row = styled.div`
   justify-content: space-between;
 `;
 
-const ClimbInputRow = styled(Row)`
-  margin-bottom: 12px;
-`;
-
-const ClimbNotesTextArea = styled(TextArea)`
-  height: 55px;
-`;
-
 const ItemText = styled.p`
   margin: 0
-`;
-
-const AddClimbButton = styled(Button)`
-  width: 200px;
-  margin: 12px 0 10px 0;
-  background-color: #1976d2;
-`;
-
-const GradeInputLabel = styled(InputLabel)`
-  width: 80px;
-  margin: 18px 0 0 26px;
-  
 `;
 
 type SavedCragProps = {
   savedItem: SavedTodoCragType;
   editItemId: string;
   viewItemId: string;
+  addClimbCragId: string;
+  setAddClimbCragId: (val: string) => void;
   setViewItemId: (itemId: string) => void;
   setEditItemId: (itemId: string) => void;
+  cancelAddCrag: () => void;
 };
 
-export default function SavedCrag(props: SavedCragProps): ReactElement {
+const SavedCrag = (props: SavedCragProps) => {
   const {
-    savedItem: { id: itemId, name, geoCoordinates, conditions }, editItemId, setEditItemId, viewItemId, setViewItemId,
+    savedItem: { id: itemId, name, geoCoordinates, conditions },
+    addClimbCragId, setAddClimbCragId, editItemId, setEditItemId, viewItemId, setViewItemId, cancelAddCrag
   } = props;
   const [conditionsValue, setConditionsValue] = useState<string>(conditions);
   const [geoCoordinatesValue, setGeoCoordinatesValue] = useState<string>(geoCoordinates);
-  const [openConfirmDelete, setOpenConfirmDelete] = useState<boolean>(false);
-  const [isAddClimb, setIsAddClimb] = useState<boolean>(false);
+  const [confirmDeleteClimbId, setConfirmDeleteClimbId] = useState<string>('');
+  const [openConfirmDeleteCrag, setOpenConfirmDeleteCrag] = useState<boolean>(false);
   const [newClimbName, setNewClimbName] = useState<string>('');
   const [newClimbGrade, setNewClimbGrade] = useState<string>('');
   const [newClimbNotes, setNewClimbNotes] = useState<string>('');
@@ -78,22 +59,16 @@ export default function SavedCrag(props: SavedCragProps): ReactElement {
   const {
     updateSavedTodoCrag, deleteSavedItem, getSavedTodoCrags, addTodoClimb, getSavedTodoClimbs, savedTodoClimbs
   } = React.useContext(AppContext);
+
   const isView = viewItemId === itemId;
   const isEdit = editItemId === itemId;
-
-  const gradeOptions = [];
-  let gradeList = ['6b', '6c', '7a', '7b', '7c', '8a', '8b'];
-  if (newClimbType === 'boulder') {
-    gradeList.unshift('6a');
-    gradeList = gradeList.map(i => `f${i}`);
-  }
-  for (let grade of gradeList) {
-    gradeOptions.push(grade);
-    gradeOptions.push(`${grade}+`);
-  }
+  const isAddClimb = addClimbCragId === itemId;
+  const newClimbData = { newClimbName, newClimbType, newClimbNotes, newClimbGrade };
+  const todoClimbs = savedTodoClimbs.filter(i => i.cragId === itemId)
 
   const viewToggle = () => {
     resetClimbForm();
+    cancelAddCrag();
     if (isView || isEdit) {
       setViewItemId('');
       setEditItemId('');
@@ -108,10 +83,17 @@ export default function SavedCrag(props: SavedCragProps): ReactElement {
   };
 
   const resetClimbForm = () => {
-    setIsAddClimb(false);
+    setAddClimbCragId('');
     setNewClimbGrade('');
     setNewClimbName('');
     setNewClimbNotes('');
+  };
+
+  const handleEdit = () => {
+    resetClimbForm();
+    cancelAddCrag();
+    setEditItemId(itemId);
+    setViewItemId('');
   };
 
   const handleSave = () => {
@@ -124,9 +106,16 @@ export default function SavedCrag(props: SavedCragProps): ReactElement {
     cancelEdit();
   };
 
-  const handleDelete = async () => {
+  const handleDeleteCrag = async () => {
     await deleteSavedItem(itemId, 'todoCrag');
+    setEditItemId('');
     await getSavedTodoCrags();
+  };
+
+  const handleDeleteClimb = async () => {
+    await deleteSavedItem(confirmDeleteClimbId, 'todoClimb');
+    setConfirmDeleteClimbId('');
+    await getSavedTodoClimbs();
   };
 
   const handleNewClimbSubmit = async () => {
@@ -139,8 +128,27 @@ export default function SavedCrag(props: SavedCragProps): ReactElement {
     setNewClimbName('');
     setNewClimbGrade('');
     setNewClimbNotes('');
-    cancelEdit();
+    setAddClimbCragId('');
     await getSavedTodoClimbs();
+  }
+
+  const handleAddClimbInput = (val: string, inputType: string) => {
+    switch (inputType) {
+      case 'type':
+        setNewClimbType(val);
+        break;
+      case 'name':
+        setNewClimbName(val);
+        break;
+      case 'grade':
+        setNewClimbGrade(val);
+        break;
+      case 'notes':
+        setNewClimbNotes(val);
+        break;
+      default:
+        break;
+    }
   }
 
   return (
@@ -158,119 +166,96 @@ export default function SavedCrag(props: SavedCragProps): ReactElement {
             {isView || isEdit ? <ArrowDropUpIcon /> : <ExpandCircleDownIcon />}
           </IconButton>
         </Spacing>
-        {isView ? (
+        {isView && (
           <>
             <Spacing fitContent my="5px" float="right">
-              <Button
-                onClick={() => {
-                  resetClimbForm();
-                  setEditItemId(itemId);
-                  setViewItemId('');
-                }}
-              >
+              <Button onClick={handleEdit}>
                 Edit
               </Button>
             </Spacing>
           </>
-        ) : isEdit ? (
-          <>
-            <Spacing fitContent my="5px" float="right">
-              <Button onClick={cancelEdit}>
-                Cancel
-              </Button>
-            </Spacing>
-            <Spacing fitContent my="5px" float="right">
-              <Button onClick={() => setOpenConfirmDelete(true)}>
-                Delete
-              </Button>
-            </Spacing>
-            <Spacing fitContent my="5px" float="right">
-              <Button onClick={handleSave}>
-                Save
-              </Button>
-            </Spacing>
-          </>
-        ) : null}
+        )}
       </Row>
       {isView && geoCoordinatesValue && (
-        <Row>
+        <Row className={styles.mb10}>
           <ItemText><strong>Geo: </strong>{geoCoordinatesValue}</ItemText>
         </Row>
       )}
       {isView && conditionsValue && (
-        <Row>
+        <Row className={styles.mb10}>
           <ItemText><strong>Access and conditions: </strong>{conditionsValue}</ItemText>
         </Row>
       )}
-      {isView && !isAddClimb && (
-        <Row>
-          <AddClimbButton onClick={() => setIsAddClimb(true)}>
-            Add climb
-          </AddClimbButton>
-        </Row>
-      )}
       {isAddClimb && (
+        <ClimbForm
+          newClimbData={newClimbData}
+          setNewClimbData={handleAddClimbInput}
+          resetClimbForm={resetClimbForm}
+          handleNewClimbSubmit={handleNewClimbSubmit}
+        />
+      )}
+      {isEdit && (
         <>
-          <Row>
-            <AddClimbButton onClick={() => resetClimbForm()}>
+          <Input
+            value={geoCoordinatesValue}
+            name="geoCoordinates"
+            placeholder="GeoCoordinates e.g. 50.4706,-3.50215"
+            onChange={({ target }) => setGeoCoordinatesValue(target.value)}
+          />
+          <TextArea
+            value={conditionsValue}
+            name="conditions"
+            placeholder="Access and conditions"
+            onChange={({ target }) => setConditionsValue(target.value)}
+          />
+          <FlexStartRow>
+            <FormButton onClick={cancelEdit}>
               Cancel
-            </AddClimbButton>
-            <AddClimbButton
-              disabled={!newClimbName || !newClimbGrade}
-              onClick={handleNewClimbSubmit}
-            >
+            </FormButton>
+            <FormButton onClick={() => setOpenConfirmDeleteCrag(true)}>
+              Delete
+            </FormButton>
+            <FormButton onClick={handleSave}>
               Save
-            </AddClimbButton>
-          </Row>
-          <ClimbTypeRadioButtons
-            defaultValue={'boulder'}
-            setNewClimbType={setNewClimbType}
-          />
-          <ClimbInputRow>
-            <Input
-              value={newClimbName}
-              name="climbName"
-              placeholder="Name"
-              onChange={({ target }) => setNewClimbName(target.value)}
-            />
-            <GradeInputLabel sx={ {fontSize: 13} }>Grade</GradeInputLabel>
-            <Select
-              value={newClimbGrade}
-              onChange={({ target }) => setNewClimbGrade(target.value.toString())}
-              sx={{ minWidth: '420px' }}
-            >
-              {gradeOptions.map(i => (<MenuItem key={i} value={i}>{i}</MenuItem>))}
-            </Select>
-          </ClimbInputRow>
-          <ClimbNotesTextArea
-            value={newClimbNotes}
-            name="climbNotes"
-            placeholder="Notes"
-            onChange={({ target }) => setNewClimbNotes(target.value)}
-          />
+            </FormButton>
+          </FlexStartRow>
         </>
       )}
-      {isEdit && (
-        <Input
-          value={geoCoordinatesValue}
-          name="geoCoordinates"
-          placeholder="GeoCoordinates e.g. 50.4706,-3.50215"
-          onChange={({ target }) => setGeoCoordinatesValue(target.value)}
-        />
-      )}
-      {isEdit && (
-        <TextArea
-          value={conditionsValue}
-          name="conditions"
-          placeholder="Access and conditions"
-          onChange={({ target }) => setConditionsValue(target.value)}
-        />
+      <div className={todoClimbs.length && (isView || isEdit) ? styles.mt15 : undefined}>
+      {todoClimbs.map(climbItem => (
+        <FlexStartRow>
+          <p className={styles.climbText}>{climbItem.name}</p>
+          <p className={styles.climbText}>{climbItem.grade}</p>
+          {climbItem.notes && (<p className={`${styles.climbText} ${styles.secondaryColor}`}>{climbItem.notes}</p>)}
+          <IconButton
+            color="primary"
+            onClick={() => setConfirmDeleteClimbId(climbItem.id)}
+            sx={{ paddingTop: 0 }}
+          >
+            <ClearIcon />
+          </IconButton>
+        </FlexStartRow>
+      ))}
+      </div>
+      {isView && !isAddClimb && (
+        <Row >
+          <FormButton onClick={() => setAddClimbCragId(itemId)}>
+            Add climb
+          </FormButton>
+        </Row>
       )}
       <ConfirmDelete
-        handleDelete={handleDelete}
-        open={openConfirmDelete}
-        onClose={() => setOpenConfirmDelete(false)}
+        handleDelete={handleDeleteCrag}
+        open={openConfirmDeleteCrag}
+        onClose={() => setOpenConfirmDeleteCrag(false)}
+      />
+      <ConfirmDelete
+        handleDelete={handleDeleteClimb}
+        open={!!confirmDeleteClimbId}
+        onClose={() => setConfirmDeleteClimbId('')}
       />
     </Wrapper>
   );
 }
+
+export default SavedCrag;

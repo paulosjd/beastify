@@ -1,4 +1,6 @@
 import styled from "styled-components";
+import {Row} from "./ClimbForm";
+import Button from "./Button";
 
 export const Spacing = styled.div<{
   mt?: string;
@@ -34,4 +36,16 @@ export const NoDataParagraph = styled.p`
 export const SavedItemWrapper = styled.div`
   width: 100%;
   overflow: auto;
+`;
+
+export const FlexStartRow = styled(Row)`
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 20px;
+`;
+
+export const FormButton = styled(Button)`
+  width: 200px;
+  margin: 12px 0 10px 0;
+  background-color: #1976d2;
 `;

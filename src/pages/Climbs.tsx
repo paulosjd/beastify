@@ -1,26 +1,15 @@
 import React, { ReactElement, useContext, useEffect, useState } from "react";
 import styled from "styled-components";
 import { AppContext } from "../AppContext";
-import { ArticleFilterParamsType } from "../lib/types";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import TextArea from "../components/TextArea";
 import SavedCrag from "../components/SavedCrag";
-import ArticleSearch from "../components/ArticleSearch";
-import { Spacing, Wrapper, SavedItemWrapper } from "../components/StyledComponents";
+import { Spacing, Wrapper, SavedItemWrapper, FormButton, FlexStartRow } from "../components/StyledComponents";
+import {Row} from "../components/ClimbForm";
 
 const TodoClimbsWrapper = styled(Wrapper)`
   max-width: 1320px;
-`;
-
-const TooltipWrapper = styled.div`
-  border: 1px solid #717171;
-  background-color: #FFF;
-  padding: 2px 4px 0 4px;
-`;
-
-const AddItemButton = styled(Button)`
-  min-height: 45px;
 `;
 
 const AddItemWrapper = styled.div`
@@ -36,6 +25,7 @@ const Climbs = (): ReactElement => {
   const [geoCoordinates, setGeoCoordinates] = useState<string>("");
   const [cragName, setCragName] = useState<string>("");
   const [conditions, setConditions] = useState<string>("");
+  const [addClimbCragId, setAddClimbCragId] = useState<string>('');
   const { addTodoCrag, getSavedTodoCrags, savedTodoCrags, getSavedTodoClimbs } = useContext(AppContext);
   const [isAddCrag, setIsAddCrag] = useState<boolean>(false);
 
@@ -54,10 +44,27 @@ const Climbs = (): ReactElement => {
     await getSavedTodoCrags();
   }
 
+  const handleAddCrag = () => {
+    setIsAddCrag(true);
+    setViewCragId('');
+    setEditCragId('');
+    setAddClimbCragId('');
+  };
+
+  const resetForm = () => {
+    setCragName('');
+    setGeoCoordinates('');
+    setConditions('');
+  };
+
+  const cancelAdd = () => {
+    setIsAddCrag(false);
+    resetForm();
+  };
+
   return (
     <TodoClimbsWrapper>
       <SavedItemWrapper>
-
         {savedTodoCrags.map((item) => (
           <SavedCrag
             key={item.id}
@@ -66,18 +73,23 @@ const Climbs = (): ReactElement => {
             setEditItemId={setEditCragId}
             viewItemId={viewCragId}
             setViewItemId={setViewCragId}
+            addClimbCragId={addClimbCragId}
+            setAddClimbCragId={setAddClimbCragId}
+            cancelAddCrag={cancelAdd}
           />
         ))}
       </SavedItemWrapper>
       <AddItemWrapper>
-        <Spacing mt="10px">
-          <AddItemButton
-            style={{ display: isAddCrag ? 'none' : undefined }}
-            onClick={() => setIsAddCrag(true)}
-          >
-            Add Crag
-          </AddItemButton>
-        </Spacing>
+        {!viewCragId && !editCragId && (
+          <FlexStartRow>
+            <FormButton
+              style={{ display: isAddCrag ? 'none' : undefined }}
+              onClick={handleAddCrag}
+            >
+              Add Crag
+            </FormButton>
+          </FlexStartRow>
+        )}
         {isAddCrag && (
           <div>
             <Input
@@ -98,14 +110,17 @@ const Climbs = (): ReactElement => {
               placeholder="Access and Conditions"
               onChange={({ target }) => setConditions(target.value)}
             />
-            <Spacing mt="10px">
-              <AddItemButton
-                disabled={false}
+            <FlexStartRow>
+              <FormButton onClick={cancelAdd} >
+                Cancel
+              </FormButton>
+              <FormButton
+                disabled={!cragName}
                 onClick={handleSubmit}
               >
                 Save
-              </AddItemButton>
-            </Spacing>
+              </FormButton>
+            </FlexStartRow>
           </div>
         )}
       </AddItemWrapper>
