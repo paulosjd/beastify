@@ -84,3 +84,14 @@ export interface EditedCragType {
   newGeocoordinates?: string;
   newConditions?: string;
 }
+
+export interface SheetIdConfigType {
+  id?: string;
+  bodyWeightSheetId?: string;
+  logbookSheetId?: string;
+  pullupsSheetId?: string;
+}
+
+export interface SavedSheetIdConfigType extends SheetIdConfigType {
+  id: string;
+}

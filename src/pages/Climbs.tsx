@@ -5,6 +5,7 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 import TextArea from "../components/TextArea";
 import SavedCrag from "../components/SavedCrag";
+import { sortByName } from "../lib/helpers";
 import { Spacing, Wrapper, SavedItemWrapper, FormButton, FlexStartRow } from "../components/StyledComponents";
 import {Row} from "../components/ClimbForm";
 
@@ -65,7 +66,7 @@ const Climbs = (): ReactElement => {
   return (
     <TodoClimbsWrapper>
       <SavedItemWrapper>
-        {savedTodoCrags.map((item) => (
+        {savedTodoCrags.sort(sortByName).map((item) => (
           <SavedCrag
             key={item.id}
             savedItem={item}

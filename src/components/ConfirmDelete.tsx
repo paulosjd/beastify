@@ -3,13 +3,13 @@ import Button from '@mui/material/Button';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 
-type DialogProps = {
+type ConfirmDeleteProps = {
   open: boolean;
   onClose: () => void;
   handleDelete: () => void;
 };
 
-const ConfirmDelete = (props: DialogProps) => {
+const ConfirmDelete = (props: ConfirmDeleteProps) => {
   const { open, onClose, handleDelete } = props;
 
   const handleClose = () => {
@@ -23,7 +23,7 @@ const ConfirmDelete = (props: DialogProps) => {
   return (
     <Dialog onClose={handleClose} open={open}>
       <DialogTitle>Confirm delete?</DialogTitle>
-      <Button onClick={handleConfirm}>
+      <Button onClick={handleConfirm} sx={{ mb: 1 }}>
         Delete
       </Button>
     </Dialog>

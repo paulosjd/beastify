@@ -1,4 +1,4 @@
-import React, { ReactElement, useState } from "react";
+import React, { ReactElement, useContext, useState } from "react";
 import useGoogleSheets from "use-google-sheets";
 import CircularProgress from '@mui/material/CircularProgress';
 import styled from "styled-components";
@@ -9,6 +9,7 @@ import GradeByDate from "../components/GradeByDate"
 import LogbookOptions from "../components/LogbookOptions";
 import GradePyramid from "../components/GradePyramid";
 import RoutesTable from "../components/RoutesTable";
+import { AppContext } from "../AppContext";
 
 const LogbookWrapper = styled(Wrapper)`
   margin-top: 15px;
@@ -32,6 +33,7 @@ const Logbook = (): ReactElement => {
   const [timeframe, setTimeframe] = useState<number>(1);
   const [climbType, setClimbType] = useState<string>('boulder');
   const [chartType, setChartType] = useState<string>('date');
+  const { sheetIdConfigData } = useContext(AppContext);
 
   const handleTimeframeChange = (value: number | string ) => {
     if (typeof value === 'number') {
@@ -46,7 +48,7 @@ const Logbook = (): ReactElement => {
 
   const sheetsObj = {
     apiKey: process.env.REACT_APP_SHEETS_API_KEY || '',
-    sheetId: process.env.REACT_APP_LOGBOOK_SHEET_ID || '',
+    sheetId: sheetIdConfigData.logbookSheetId || '',
   };
 
   const { data, loading } = useGoogleSheets(sheetsObj);

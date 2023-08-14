@@ -38,8 +38,9 @@ import {
   SavedTodoCragType,
   SavedTodoClimbType,
   TodoClimbType,
-  UserType
-
+  UserType,
+  SheetIdConfigType,
+  SavedSheetIdConfigType
 } from "./lib/types";
 
 interface Props {
@@ -56,11 +57,15 @@ interface ContextType {
   savedTodoCrags: SavedTodoCragType[];
   savedTodoClimbs: SavedTodoClimbType[];
   logItemNotes: NotesByLogItemKeyType;
+  sheetIdConfigData: SheetIdConfigType;
   logInUser(email: string, password: string): Promise<void>;
   signInWithGoogle(): Promise<void>;
   registerUser(data: RegistrationType): Promise<void>;
   updateAvatar(file: { image: Blob; ext: string }): Promise<void>;
   signOutUser(): Promise<void>;
+  addSheetIdConfig(params: SheetIdConfigType): Promise<void>;
+  updateSheetIdConfig(params: SavedSheetIdConfigType): Promise<void>;
+  getSheetIdConfigData(): Promise<void>;
   addTodoCrag(params: TodoCragType): Promise<void>;
   updateSavedTodoCrag(params: EditedCragType): Promise<void>;
   getSavedTodoCrags(): Promise<void>;
@@ -84,11 +89,15 @@ const contextDefaultVal: ContextType = {
   savedTodoCrags: [],
   savedTodoClimbs: [],
   logItemNotes: {},
+  sheetIdConfigData: {},
   logInUser: async () => {},
   signInWithGoogle: async () => {},
   registerUser: async () => {},
   updateAvatar: async () => {},
   signOutUser: async () => {},
+  addSheetIdConfig: async () => {},
+  updateSheetIdConfig: async () => {},
+  getSheetIdConfigData: async () => {},
   addTodoCrag: async () => {},
   getSavedTodoCrags: async () => {},
   updateSavedTodoCrag: async () => {},
@@ -114,6 +123,7 @@ export default function AppContextProvider({ children }: Props): ReactElement {
   const [savedTodoClimbs, setSavedTodoClimbs] = useState<SavedTodoClimbType[]>([]);
   const [savedArticles, setSavedArticles] = useState<SavedArticleType[]>([]);
   const [savedLogItemNotes, setSavedLogItemNotes] = useState<NotesByLogItemKeyType>({});
+  const [sheetIdConfigData, setSheetIdConfigData] = useState<SheetIdConfigType>({});
 
   const logInUser = async (email: string, password: string) => {
     setLoading(true);
@@ -477,6 +487,58 @@ export default function AppContextProvider({ children }: Props): ReactElement {
     } catch (error) { }
   };
 
+  const addSheetIdConfig = async (params: SheetIdConfigType) => {
+    try {
+      const docRef = doc(
+        db,
+        "sheetIdConfig",
+        uuid() /*unique id for new document, n.b.firestore can do this for you if you leave the third parameter empty*/
+      );
+      const userId = auth.currentUser;
+      if (userId !== null) {
+        await setDoc(docRef, {
+          userId: userId.uid,
+          bodyWeightSheetId: params.bodyWeightSheetId,
+          logbookSheetId: params.logbookSheetId,
+          pullupsSheetId: params.pullupsSheetId
+        });
+      }
+    } catch (error) { }
+  };
+
+  const updateSheetIdConfig = async (params: SavedSheetIdConfigType) => {
+    const { id, bodyWeightSheetId, logbookSheetId, pullupsSheetId } = params;
+    try {
+      const docRef = doc(db, "sheetIdConfig", id);
+      await updateDoc(docRef, {
+        bodyWeightSheetId: bodyWeightSheetId,
+        logbookSheetId: logbookSheetId,
+        pullupsSheetId: pullupsSheetId
+      });
+    } catch (error) { }
+  };
+
+  const getSheetIdConfigData = async () => {
+    try {
+      if (auth.currentUser !== null) {
+        const userId = auth.currentUser.uid;
+        const q = query(
+          collection(db, "sheetIdConfig"),
+          where("userId", "==", userId)
+        );
+        setSheetIdConfigData({});
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          const doc = querySnapshot.docs[0];
+          setSheetIdConfigData({
+            id: doc.id,
+            ...doc.data()
+          })
+        }
+      }
+    } catch (error) { console.log(error) }
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -493,6 +555,10 @@ export default function AppContextProvider({ children }: Props): ReactElement {
         updateSavedArticle,
         deleteSavedItem,
         signOutUser,
+        addSheetIdConfig,
+        updateSheetIdConfig,
+        getSheetIdConfigData,
+        sheetIdConfigData,
         addTodoCrag,
         getSavedTodoCrags,
         addTodoClimb,

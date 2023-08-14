@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Redirect, Route, Switch } from "react-router";
 import { BrowserRouter } from "react-router-dom";
 import styled from "styled-components";
@@ -11,6 +11,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Tracker from "./pages/Tracker";
 import PrivateRoute from "./components/PrivateRoute"
+import SettingsDialog from "./components/SettingsDialog"
 
 const AppWrapper = styled.div`
   max-width: 1420px;
@@ -19,10 +20,17 @@ const AppWrapper = styled.div`
 `;
 
 function App() {
+  const [openSettingsDialog, setOpenSettingsDialog] = useState<boolean>(false);
+
+  const handleClose = () => {
+    setOpenSettingsDialog(false);
+  };
 
   return (
     <BrowserRouter>
-      <Navbar />
+      <Navbar
+        setOpenSettingsDialog={setOpenSettingsDialog}
+      />
       <AppWrapper>
         <Switch>
           <Route exact path="/home" component={Home} />
@@ -34,6 +42,10 @@ function App() {
           <PrivateRoute path="/climbs" component={Climbs} />
           <Redirect path="*" to="/home" />
         </Switch>
+        <SettingsDialog
+          open={openSettingsDialog}
+          onClose={() => setOpenSettingsDialog(false)}
+        />
       </AppWrapper>
     </BrowserRouter>
   );

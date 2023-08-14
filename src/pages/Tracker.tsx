@@ -1,4 +1,4 @@
-import React, { ReactElement, useState } from "react";
+import React, { ReactElement, useContext, useState } from "react";
 import useGoogleSheets from "use-google-sheets";
 import CircularProgress from '@mui/material/CircularProgress';
 import { Line, LineChart, CartesianGrid, Legend, Tooltip, XAxis, YAxis, TooltipProps } from "recharts";
@@ -8,6 +8,7 @@ import { NoDataParagraph, Wrapper } from "../components/StyledComponents";
 import styled from "styled-components";
 import TrackerOptions from "../components/TrackerOptions";
 import type { Payload } from "recharts/types/component/DefaultLegendContent";
+import { AppContext } from "../AppContext";
 
 const LogbookWrapper = styled(Wrapper)`
   margin-top: 15px;
@@ -22,17 +23,19 @@ const TooltipWrapper = styled.div`
 const Tracker = (): ReactElement => {
 
   const [chartType, setChartType] = useState<string>('absolute');
+  const { sheetIdConfigData } = useContext(AppContext);
+
   const lineColors = ['#1F77B4', '#ff7f0e', '#2ca02c', '#9467bd', '#bcbd22'];
   const dataKeys = ['1r', '2r', '3r', '4r', '5r'];
   const showWeightLine = chartType === 'bodyWeight';
   const sheetsObj = {
     apiKey: process.env.REACT_APP_SHEETS_API_KEY || '',
-    sheetId: process.env.REACT_APP_PULLUPS_SHEET_ID || '',
+    sheetId: sheetIdConfigData.pullupsSheetId || '',
   };
 
   const { data, loading } = useGoogleSheets(sheetsObj);
   let { data: bwSheetData } = useGoogleSheets({
-    ...sheetsObj, sheetId: process.env.REACT_APP_BODYWEIGHT_SHEET_ID || ''
+    ...sheetsObj, sheetId: sheetIdConfigData.bodyWeightSheetId || ''
   });
 
   if (loading) {

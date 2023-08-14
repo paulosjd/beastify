@@ -1,5 +1,5 @@
-import React, {ReactElement, useContext, useState, ChangeEvent, MouseEvent} from "react";
-import {withRouter} from "react-router";
+import React, { ReactElement, useContext, useState, ChangeEvent, MouseEvent } from "react";
+import { withRouter, RouteComponentProps } from "react-router";
 import {Link, useLocation} from "react-router-dom";
 import styled from "styled-components";
 import Box from '@mui/material/Box';
@@ -10,33 +10,40 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Settings from '@mui/icons-material/Settings';
 import Logout from '@mui/icons-material/Logout';
-import {Spacing} from "./StyledComponents";
-import {AppContext} from "../AppContext";
-import Button from "./Button";
+import { Spacing } from "./StyledComponents";
+import { AppContext } from "../AppContext";
+import styles from "./styles.module.css";
 
 const NavbarStyle = styled.div`
-  padding: 5px 20px;
+  padding: 0 10px 5px 0;
+  margin-right: 50px;
   background: #B89E47;
-  min-height: 75px;
+  min-height: 46px;
   text-align: center;
   color: #f8fcda;
   width: 100%;
 `;
 
 const Avatar = styled.img`
-  width: 65px;
-  height: 65px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   cursor: pointer;
 `;
 
-type AccountMenuProps = {
+interface NavProps {
+  setOpenSettingsDialog: (val: boolean) => void;
+}
+
+interface AccountMenuProps extends NavProps {
   avatar: string | null | undefined;
   handleImageChange: (e: ChangeEvent<HTMLInputElement>) => Promise<void>;
   signOutUser: (e: ChangeEvent<HTMLInputElement>) => Promise<void>;
 }
 
-const AccountMenu = ({ avatar, handleImageChange, signOutUser }: AccountMenuProps): ReactElement => {
+const AccountMenu = (props: AccountMenuProps): ReactElement => {
+
+  const { avatar, setOpenSettingsDialog, handleImageChange, signOutUser } = props;
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: MouseEvent<HTMLElement>) => {
@@ -50,16 +57,20 @@ const AccountMenu = ({ avatar, handleImageChange, signOutUser }: AccountMenuProp
   return (
     <React.Fragment>
       <Box sx={{ display: 'flex', alignItems: 'center', textAlign: 'center' }}>
-        {location.pathname !== '/home' && (
+        {location.pathname !== '/home' && location.pathname !== '/login' && (
           <Link to="/home" style={{ textDecoration: 'none', float: 'right' }}>
-            <Typography sx={{ minWidth: 100, color: '#f8fcda', float: 'right' }}>Home</Typography>
+            <Typography
+              sx={{ minWidth: 100, color: '#f8fcda', float: 'right', fontWeight: 'bold', ml: 5 }}
+              component='h4'
+            >
+              Home
+            </Typography>
           </Link>
         )}
-        <Typography sx={{ minWidth: 100 }}>Profile</Typography>
           <IconButton
             onClick={handleClick}
             size="small"
-            sx={{ ml: 2 }}
+            sx={{ ml: 'auto', mr: 6 }}
             aria-controls={open ? 'account-menu' : undefined}
             aria-haspopup="true"
             aria-expanded={open ? 'true' : undefined}
@@ -102,7 +113,7 @@ const AccountMenu = ({ avatar, handleImageChange, signOutUser }: AccountMenuProp
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <MenuItem onClick={handleClose}>
+        <MenuItem onClick={() => setOpenSettingsDialog(true)}>
           <ListItemIcon>
             <Settings fontSize="small" />
           </ListItemIcon>
@@ -119,7 +130,12 @@ const AccountMenu = ({ avatar, handleImageChange, signOutUser }: AccountMenuProp
   );
 }
 
-const NavBar = (): ReactElement => {
+interface NavBarProps extends NavProps {
+
+}
+
+const NavBar: React.FunctionComponent<NavBarProps & RouteComponentProps> = (props: NavBarProps) => {
+
   const { currentUser, signOutUser, updateAvatar } = useContext(AppContext);
 
   const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -139,6 +155,7 @@ const NavBar = (): ReactElement => {
     <NavbarStyle>
       <Spacing>
         <AccountMenu
+          setOpenSettingsDialog={props.setOpenSettingsDialog}
           avatar={currentUser?.avatar}
           handleImageChange={handleImageChange}
           signOutUser={signOutUser}

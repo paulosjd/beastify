@@ -20,7 +20,6 @@ const AddItemButton = styled(Button)`
 `;
 
 const AddItemWrapper = styled.div`
-  margin-top: 25px;
   margin-bottom: 10px;
   width: 100%
 `;
@@ -82,10 +81,12 @@ export default function Articles(): ReactElement {
   return (
     <ArticlesWrapper>
       <SavedItemWrapper>
-        <ArticleSearch
-          filterParams={filterParams}
-          setFilterParams={setFilterParams}
-        />
+        {!!savedArticles.length && (
+          <ArticleSearch
+            filterParams={filterParams}
+            setFilterParams={setFilterParams}
+          />
+        )}
         {savedArticles.map((item) => (
           <SavedArticle
             key={item.itemId}
@@ -100,7 +101,7 @@ export default function Articles(): ReactElement {
         ))}
       </SavedItemWrapper>
       <AddItemWrapper>
-        <Spacing mt="10px">
+        <Spacing mt="30px">
           <AddItemButton
             style={{ display: isAdd ? 'none' : undefined }}
             onClick={() => setIsAdd(true)}

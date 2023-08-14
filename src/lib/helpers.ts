@@ -79,4 +79,10 @@ export function linearRegression(inputArray: any, xLabel: any, yLabel: any) {
   const slope = SSxy / SSxx;
   const intercept = avgY - slope * avgX;
   return (x: any) => intercept + slope * x;
+}
+
+type ObjWithName = {
+  name: string
 };
+
+export const sortByName = (a: ObjWithName, b: ObjWithName) => a.name < b.name ? -1 : a.name > b.name ?  1: 0;

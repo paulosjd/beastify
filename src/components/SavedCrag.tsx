@@ -7,6 +7,7 @@ import styled from "styled-components";
 import Button from "./Button";
 import Input from "./Input";
 import { AppContext } from "../AppContext";
+import { sortByName } from "../lib/helpers";
 import { SavedTodoCragType } from "../lib/types";
 import { Spacing, FormButton, FlexStartRow } from "./StyledComponents";
 import TextArea from "./TextArea";
@@ -151,6 +152,8 @@ const SavedCrag = (props: SavedCragProps) => {
     }
   }
 
+  // TODO map
+
   return (
     <Wrapper>
       <Row>
@@ -222,7 +225,7 @@ const SavedCrag = (props: SavedCragProps) => {
         </>
       )}
       <div className={todoClimbs.length && (isView || isEdit) ? styles.mt15 : undefined}>
-      {todoClimbs.map(climbItem => (
+      {todoClimbs.sort(sortByName).map(climbItem => (
         <FlexStartRow>
           <p className={styles.climbText}>{climbItem.name}</p>
           <p className={styles.climbText}>{climbItem.grade}</p>
