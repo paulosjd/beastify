@@ -1,20 +1,13 @@
-import React, {useContext, useState} from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import FormControl from "@mui/material/FormControl";
 import TextField from "@mui/material/TextField";
 import Box from '@mui/material/Box';
-
-import InputLabel from "@mui/material/InputLabel";
-import PersonIcon from '@mui/icons-material/Person';
-import AddIcon from '@mui/icons-material/Add';
-import Typography from '@mui/material/Typography';
-import { blue } from '@mui/material/colors';
-import Input from "./Input";
-import { FormButton } from "../components/StyledComponents";
+import { FormButton } from "./StyledComponents";
 import styles from "./styles.module.css";
 import styled from "styled-components";
-import {AppContext} from "../AppContext";
+import { AppContext } from "../AppContext";
 
 type SettingsDialogProps = {
   open: boolean;
@@ -34,11 +27,21 @@ const SaveButton = styled(FormButton)`
 const SettingsDialog = (props: SettingsDialogProps) => {
   const { onClose, open } = props;
 
-  const { sheetIdConfigData, getSheetIdConfigData, addSheetIdConfig, updateSheetIdConfig } = useContext(AppContext);
-  console.log(sheetIdConfigData)
-  const [bodyWeightSheetId, setBodyweightSheetId] = useState<string>(sheetIdConfigData.bodyWeightSheetId || '');
-  const [logbookSheetId, setLogbookSheetId] = useState<string>(sheetIdConfigData.logbookSheetId || '');
-  const [pullupsSheetId, setPullupsSheetId] = useState<string>(sheetIdConfigData.pullupsSheetId || '');
+  const {
+    sheetIdConfigData, currentUser, getSheetIdConfigData, addSheetIdConfig, updateSheetIdConfig
+  } = useContext(AppContext);
+
+  const [bodyWeightSheetId, setBodyweightSheetId] = useState<string>('');
+  const [logbookSheetId, setLogbookSheetId] = useState<string>('');
+  const [pullupsSheetId, setPullupsSheetId] = useState<string>('');
+
+  useEffect(() => {
+    // getSheetIdConfigData();
+    setBodyweightSheetId(sheetIdConfigData.bodyWeightSheetId || '');
+    setLogbookSheetId(sheetIdConfigData.logbookSheetId || '');
+    setPullupsSheetId(sheetIdConfigData.pullupsSheetId || '');
+    // eslint-disable-next-line
+  }, [sheetIdConfigData]);
 
   const handleSubmit = async () => {
     if (sheetIdConfigData.id) {
@@ -46,8 +49,8 @@ const SettingsDialog = (props: SettingsDialogProps) => {
     } else {
       await addSheetIdConfig({ pullupsSheetId, logbookSheetId, bodyWeightSheetId })
     }
-    await getSheetIdConfigData();
     onClose();
+    await getSheetIdConfigData();
   };
 
   return (

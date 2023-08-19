@@ -218,11 +218,16 @@ export default function AppContextProvider({ children }: Props): ReactElement {
       );
       const userId = auth.currentUser;
       if (userId !== null) {
+        const { name, approachTime, driveTime, minTemp, maxTemp, geoCoordinates, conditions } = params;
         await setDoc(docRef, {
           userId: userId.uid,
-          name: params.name,
-          geoCoordinates: params.geoCoordinates,
-          conditions: params.conditions
+          approachTime,
+          driveTime,
+          minTemp,
+          maxTemp,
+          name,
+          geoCoordinates,
+          conditions
         });
       }
     } catch (error) { }
@@ -237,15 +242,18 @@ export default function AppContextProvider({ children }: Props): ReactElement {
           where("userId", "==", userId)
         );
 
-        // reset the saved items value
         setSavedTodoCrags([]);
         const cragsCollection: SavedTodoCragType[] = [];
 
         const querySnapshot = await getDocs(q);
         querySnapshot.forEach((doc) => {
-          const { name, geoCoordinates, conditions } = doc.data();
+          const { name, approachTime, driveTime, minTemp, maxTemp, geoCoordinates, conditions } = doc.data();
           cragsCollection.push({
             id: doc.id,
+            approachTime,
+            driveTime,
+            minTemp,
+            maxTemp,
             name,
             geoCoordinates,
             conditions
@@ -307,14 +315,21 @@ export default function AppContextProvider({ children }: Props): ReactElement {
   };
 
   const updateSavedTodoCrag = async (params: EditedCragType) => {
-    const { id, name, newGeocoordinates: geoCoordinates, newConditions: conditions } = params;
+    const {
+      id, name, newApproachTime: approachTime, newDriveTime: driveTime, newMinTemp: minTemp, newMaxTemp: maxTemp,
+      newGeocoordinates: geoCoordinates, newConditions: conditions
+    } = params;
     try {
       const docRef = doc(db, 'todoCrag', id);
       await updateDoc(docRef, {
         id,
+        approachTime,
+        driveTime,
+        minTemp,
+        maxTemp,
         name,
         geoCoordinates,
-        conditions,
+        conditions
       });
     } catch (error) { }
   };

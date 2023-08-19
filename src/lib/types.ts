@@ -28,6 +28,10 @@ export interface ArticleFilterParamsType {
 
 export type TodoCragType = {
   name: string;
+  approachTime: string;
+  driveTime: string;
+  minTemp: string;
+  maxTemp: string;
   geoCoordinates: string;
   conditions: string;
 }
@@ -81,6 +85,10 @@ export interface EditedArticleType {
 export interface EditedCragType {
   id: string;
   name: string;
+  newApproachTime: string;
+  newDriveTime: string;
+  newMinTemp: string;
+  newMaxTemp: string;
   newGeocoordinates?: string;
   newConditions?: string;
 }

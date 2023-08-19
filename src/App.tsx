@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {useContext, useEffect, useState} from "react";
 import { Redirect, Route, Switch } from "react-router";
 import { BrowserRouter } from "react-router-dom";
 import styled from "styled-components";
@@ -12,19 +12,26 @@ import Signup from "./pages/Signup";
 import Tracker from "./pages/Tracker";
 import PrivateRoute from "./components/PrivateRoute"
 import SettingsDialog from "./components/SettingsDialog"
+import { AppContext } from "./AppContext";
 
 const AppWrapper = styled.div`
-  max-width: 1420px;
   margin: auto;
   padding: 10px 20px;
+  display: flex;
+  justify-content: center;
 `;
 
 function App() {
   const [openSettingsDialog, setOpenSettingsDialog] = useState<boolean>(false);
+  const {
+    sheetIdConfigData, currentUser, getSheetIdConfigData, addSheetIdConfig, updateSheetIdConfig
+  } = useContext(AppContext);
 
-  const handleClose = () => {
-    setOpenSettingsDialog(false);
-  };
+  useEffect(() => {
+    getSheetIdConfigData();
+    // eslint-disable-next-line
+  }, [currentUser]);
+
 
   return (
     <BrowserRouter>

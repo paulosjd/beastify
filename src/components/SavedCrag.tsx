@@ -1,5 +1,9 @@
 import React, { useState } from "react";
 import { IconButton } from "@mui/material";
+import { DemoContainer, DemoItem } from '@mui/x-date-pickers/internals/demo';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import ClearIcon from '@mui/icons-material/Clear';
 import ExpandCircleDownIcon from '@mui/icons-material/ExpandCircleDown';
@@ -11,6 +15,7 @@ import { sortByName } from "../lib/helpers";
 import { SavedTodoCragType } from "../lib/types";
 import { Spacing, FormButton, FlexStartRow } from "./StyledComponents";
 import TextArea from "./TextArea";
+import TempPicker from "./TempPicker";
 import ClimbForm from "./ClimbForm";
 import ConfirmDelete from "./ConfirmDelete";
 import styles from "./styles.module.css";
@@ -33,6 +38,15 @@ const ItemText = styled.p`
   margin: 0
 `;
 
+const ClimbItemRow = styled(FlexStartRow)`
+  margin-top: 5px;
+`;
+
+const CragInput = styled(Input)`
+  min-height: 45px;
+  width: 20%;
+`;
+
 type SavedCragProps = {
   savedItem: SavedTodoCragType;
   editItemId: string;
@@ -46,9 +60,13 @@ type SavedCragProps = {
 
 const SavedCrag = (props: SavedCragProps) => {
   const {
-    savedItem: { id: itemId, name, geoCoordinates, conditions },
+    savedItem: { id: itemId, approachTime, driveTime, minTemp, maxTemp, name, geoCoordinates, conditions },
     addClimbCragId, setAddClimbCragId, editItemId, setEditItemId, viewItemId, setViewItemId, cancelAddCrag
   } = props;
+  const [approachTimeValue, setApproachTimeValue] = useState<string>(approachTime);
+  const [driveTimeValue, setDriveTimeValue] = useState<string>(driveTime);
+  const [minTempValue, setMinTempValue] = useState<number>(parseInt(minTemp) || 0);
+  const [maxTempValue, setMaxTempValue] = useState<number>(parseInt(maxTemp) || 25);
   const [conditionsValue, setConditionsValue] = useState<string>(conditions);
   const [geoCoordinatesValue, setGeoCoordinatesValue] = useState<string>(geoCoordinates);
   const [confirmDeleteClimbId, setConfirmDeleteClimbId] = useState<string>('');
@@ -101,6 +119,10 @@ const SavedCrag = (props: SavedCragProps) => {
     updateSavedTodoCrag({
       id: itemId,
       name,
+      newApproachTime: approachTimeValue,
+      newDriveTime: driveTimeValue,
+      newMinTemp: minTempValue.toString(),
+      newMaxTemp: maxTempValue.toString(),
       newGeocoordinates: geoCoordinatesValue,
       newConditions: conditionsValue
     });
@@ -152,8 +174,6 @@ const SavedCrag = (props: SavedCragProps) => {
     }
   }
 
-  // TODO map
-
   return (
     <Wrapper>
       <Row>
@@ -199,17 +219,43 @@ const SavedCrag = (props: SavedCragProps) => {
       )}
       {isEdit && (
         <>
-          <Input
-            value={geoCoordinatesValue}
-            name="geoCoordinates"
-            placeholder="GeoCoordinates e.g. 50.4706,-3.50215"
-            onChange={({ target }) => setGeoCoordinatesValue(target.value)}
-          />
+          <div className={styles.mb10} style={{display: 'flex'}}>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <TimePicker
+                views={['minutes', ]}
+                format="mm"
+                label={'Approach time'}
+                value={approachTimeValue}
+                onChange={( val) => setApproachTimeValue(val || '')}
+                sx={{mr: 2}}
+              />
+              <TimePicker
+                views={['minutes', ]}
+                format="mm"
+                label={'Drive time'}
+                value={driveTimeValue}
+                onChange={( val) => {console.log(val)
+                  setDriveTimeValue(val || '')}}
+                sx={{mr: 2}}
+              />
+            </LocalizationProvider>
+            <CragInput
+              value={geoCoordinatesValue}
+              name="geoCoordinates"
+              placeholder="GeoCoordinates e.g. 50.4706,-3.50215"
+              onChange={({ target }) => setGeoCoordinatesValue(target.value)}
+            />
+          </div>
+            <TempPicker
+              value={minTempValue}
+              onChange={setMinTempValue}
+            />
           <TextArea
             value={conditionsValue}
             name="conditions"
             placeholder="Access and conditions"
             onChange={({ target }) => setConditionsValue(target.value)}
+            style={{maxHeight: '45px'}}
           />
           <FlexStartRow>
             <FormButton onClick={cancelEdit}>
@@ -224,20 +270,22 @@ const SavedCrag = (props: SavedCragProps) => {
           </FlexStartRow>
         </>
       )}
-      <div className={todoClimbs.length && (isView || isEdit) ? styles.mt15 : undefined}>
+      <div>
       {todoClimbs.sort(sortByName).map(climbItem => (
-        <FlexStartRow>
+        <ClimbItemRow>
           <p className={styles.climbText}>{climbItem.name}</p>
           <p className={styles.climbText}>{climbItem.grade}</p>
           {climbItem.notes && (<p className={`${styles.climbText} ${styles.secondaryColor}`}>{climbItem.notes}</p>)}
-          <IconButton
-            color="primary"
-            onClick={() => setConfirmDeleteClimbId(climbItem.id)}
-            sx={{ paddingTop: 0 }}
-          >
-            <ClearIcon />
-          </IconButton>
-        </FlexStartRow>
+          {(isView || isEdit)  && (
+            <IconButton
+              color="primary"
+              onClick={() => setConfirmDeleteClimbId(climbItem.id)}
+              sx={{ py: 0 }}
+            >
+              <ClearIcon />
+            </IconButton>
+          )}
+        </ClimbItemRow>
       ))}
       </div>
       {isView && !isAddClimb && (

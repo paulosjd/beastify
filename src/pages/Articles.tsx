@@ -39,20 +39,20 @@ export default function Articles(): ReactElement {
   const [editItemId, setEditItemId] = useState<string>("");
   const [viewItemId, setViewItemId] = useState<string>("");
   const [filterParams, setFilterParams] = useState<ArticleFilterParamsType>(filterParamsInitialState);
-  const { addArticle, getSavedArticles, savedArticles, currentUser, handleAuthChange } = useContext(AppContext);
+  const { addArticle, getSavedArticles, savedArticles, handleAuthChange } = useContext(AppContext);
 
   useEffect(() => {
     getSavedArticles();
     // eslint-disable-next-line
   }, []);
-
-  useEffect(() => {
-    handleAuthChange({
-      err: () => {
-      },
-    });
-    // eslint-disable-next-line
-  }, []);
+  //
+  // useEffect(() => {
+  //   handleAuthChange({
+  //     err: () => {
+  //     },
+  //   });
+  //   // eslint-disable-next-line
+  // }, []);
 
   useEffect(() => {
     const handleEsc = (evt: KeyboardEvent) => {

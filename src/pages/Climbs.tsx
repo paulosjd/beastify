@@ -7,10 +7,10 @@ import TextArea from "../components/TextArea";
 import SavedCrag from "../components/SavedCrag";
 import { sortByName } from "../lib/helpers";
 import { Spacing, Wrapper, SavedItemWrapper, FormButton, FlexStartRow } from "../components/StyledComponents";
-import {Row} from "../components/ClimbForm";
+import CragMap from "../components/CragMap";
 
 const TodoClimbsWrapper = styled(Wrapper)`
-  max-width: 1320px;
+  display: flex;
 `;
 
 const AddItemWrapper = styled.div`
@@ -23,6 +23,10 @@ const Climbs = (): ReactElement => {
 
   const [editCragId, setEditCragId] = useState<string>("");
   const [viewCragId, setViewCragId] = useState<string>("");
+  const [approachTime, setApproachTime] = useState<string>('');
+  const [driveTime, setDriveTime] = useState<string>('');
+  const [minTemp, setMinTemp] = useState<string>('');
+  const [maxTemp, setMaxTemp] = useState<string>('');
   const [geoCoordinates, setGeoCoordinates] = useState<string>("");
   const [cragName, setCragName] = useState<string>("");
   const [conditions, setConditions] = useState<string>("");
@@ -37,7 +41,9 @@ const Climbs = (): ReactElement => {
   }, []);
 
   const handleSubmit = async () => {
-    await addTodoCrag({ name: cragName, geoCoordinates, conditions });
+    await addTodoCrag({
+      name: cragName, approachTime, driveTime, minTemp, maxTemp, geoCoordinates, conditions
+    });
     setGeoCoordinates("");
     setCragName("");
     setConditions("");
@@ -65,6 +71,7 @@ const Climbs = (): ReactElement => {
 
   return (
     <TodoClimbsWrapper>
+      <CragMap />
       <SavedItemWrapper>
         {savedTodoCrags.sort(sortByName).map((item) => (
           <SavedCrag
