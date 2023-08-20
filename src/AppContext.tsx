@@ -319,6 +319,8 @@ export default function AppContextProvider({ children }: Props): ReactElement {
       id, name, newApproachTime: approachTime, newDriveTime: driveTime, newMinTemp: minTemp, newMaxTemp: maxTemp,
       newGeocoordinates: geoCoordinates, newConditions: conditions
     } = params;
+    console.log(params)
+    console.log(approachTime)
     try {
       const docRef = doc(db, 'todoCrag', id);
       await updateDoc(docRef, {

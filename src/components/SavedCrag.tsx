@@ -7,6 +7,8 @@ import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import ClearIcon from '@mui/icons-material/Clear';
 import ExpandCircleDownIcon from '@mui/icons-material/ExpandCircleDown';
+import { Dayjs } from "dayjs";
+import dayjs from 'dayjs';
 import styled from "styled-components";
 import Button from "./Button";
 import Input from "./Input";
@@ -44,7 +46,9 @@ const ClimbItemRow = styled(FlexStartRow)`
 
 const CragInput = styled(Input)`
   min-height: 45px;
+  height: 56px;
   width: 20%;
+  margin-left: 12px;
 `;
 
 type SavedCragProps = {
@@ -116,6 +120,8 @@ const SavedCrag = (props: SavedCragProps) => {
   };
 
   const handleSave = () => {
+    console.log(driveTimeValue.toString())
+    // todo daysjs(  on setstate initial value ?
     updateSavedTodoCrag({
       id: itemId,
       name,
@@ -224,18 +230,17 @@ const SavedCrag = (props: SavedCragProps) => {
               <TimePicker
                 views={['minutes', ]}
                 format="mm"
-                label={'Approach time'}
-                value={approachTimeValue}
-                onChange={( val) => setApproachTimeValue(val || '')}
+                label={'Drive time'}
+                value={driveTimeValue ? dayjs().minute(parseInt(driveTimeValue)) : ''}
+                onChange={( val) => setDriveTimeValue(dayjs(val).minute().toString())}
                 sx={{mr: 2}}
               />
               <TimePicker
                 views={['minutes', ]}
                 format="mm"
-                label={'Drive time'}
-                value={driveTimeValue}
-                onChange={( val) => {console.log(val)
-                  setDriveTimeValue(val || '')}}
+                label={'Approach time'}
+                value={approachTimeValue ? dayjs().minute(parseInt(approachTimeValue)) : ''}
+                onChange={( val) => setApproachTimeValue(dayjs(val).minute().toString())}
                 sx={{mr: 2}}
               />
             </LocalizationProvider>
@@ -245,48 +250,52 @@ const SavedCrag = (props: SavedCragProps) => {
               placeholder="GeoCoordinates e.g. 50.4706,-3.50215"
               onChange={({ target }) => setGeoCoordinatesValue(target.value)}
             />
-          </div>
             <TempPicker
-              value={minTempValue}
-              onChange={setMinTempValue}
+              minTempValue={minTempValue}
+              maxTempValue={maxTempValue}
+              setMinTempValue={setMinTempValue}
+              setMaxTempValue={setMaxTempValue}
             />
+          </div>
           <TextArea
             value={conditionsValue}
             name="conditions"
             placeholder="Access and conditions"
             onChange={({ target }) => setConditionsValue(target.value)}
-            style={{maxHeight: '45px'}}
+            style={{maxHeight: '45px', marginBottom: '10px'}}
           />
-          <FlexStartRow>
-            <FormButton onClick={cancelEdit}>
-              Cancel
-            </FormButton>
-            <FormButton onClick={() => setOpenConfirmDeleteCrag(true)}>
-              Delete
-            </FormButton>
-            <FormButton onClick={handleSave}>
-              Save
-            </FormButton>
-          </FlexStartRow>
+          <Spacing mb={'10px'}>
+            <FlexStartRow>
+              <FormButton onClick={cancelEdit}>
+                Cancel
+              </FormButton>
+              <FormButton onClick={() => setOpenConfirmDeleteCrag(true)}>
+                Delete
+              </FormButton>
+              <FormButton onClick={handleSave}>
+                Save
+              </FormButton>
+            </FlexStartRow>
+          </Spacing>
         </>
       )}
       <div>
-      {todoClimbs.sort(sortByName).map(climbItem => (
-        <ClimbItemRow>
-          <p className={styles.climbText}>{climbItem.name}</p>
-          <p className={styles.climbText}>{climbItem.grade}</p>
-          {climbItem.notes && (<p className={`${styles.climbText} ${styles.secondaryColor}`}>{climbItem.notes}</p>)}
-          {(isView || isEdit)  && (
-            <IconButton
-              color="primary"
-              onClick={() => setConfirmDeleteClimbId(climbItem.id)}
-              sx={{ py: 0 }}
-            >
-              <ClearIcon />
-            </IconButton>
-          )}
-        </ClimbItemRow>
-      ))}
+        {todoClimbs.sort(sortByName).map(climbItem => (
+          <ClimbItemRow>
+            <p className={styles.climbText}>{climbItem.name}</p>
+            <p className={styles.climbText}>{climbItem.grade}</p>
+            {climbItem.notes && (<p className={`${styles.climbText} ${styles.secondaryColor}`}>{climbItem.notes}</p>)}
+            {(isView || isEdit)  && (
+              <IconButton
+                color="primary"
+                onClick={() => setConfirmDeleteClimbId(climbItem.id)}
+                sx={{ py: 0 }}
+              >
+                <ClearIcon />
+              </IconButton>
+            )}
+          </ClimbItemRow>
+        ))}
       </div>
       {isView && !isAddClimb && (
         <Row >

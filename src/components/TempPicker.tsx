@@ -1,10 +1,13 @@
 import React from 'react';
 import Box from '@mui/material/Box';
 import Slider from '@mui/material/Slider';
+import Typography from '@mui/material/Typography';
 
 type TempPickerProps = {
-  value: string;
-  onChange: (val: number) => void;
+  minTempValue: number;
+  maxTempValue: number;
+  setMinTempValue: (val: number) => void;
+  setMaxTempValue: (val: number) => void;
 };
 
 const marks = [
@@ -38,24 +41,23 @@ const valuetext = (value: number) => {
   return `${value}°C`;
 };
 
-// TODO make into range picker so set min and max on same instead of 2 different sliders
+const TempPicker = ({ minTempValue, maxTempValue, setMinTempValue, setMaxTempValue }: TempPickerProps) => {
 
-const TempPicker = ({ value, onChange }: TempPickerProps) => {
-
-  const handleChange = (evt: Event, val: number) => {
-    console.log(val)
-    onChange(val)
-    // if (e.target?.value) {
-    //   console.log(e.target.value)
-    //   onChange(e.target.value)
-    // }
+  const handleChange = (_ : Event, value: number | number[]) => {
+    if (Array.isArray(value)) {
+      setMinTempValue(value[0]);
+      setMaxTempValue(value[1]);
+    }
   };
 
   return (
-    <Box sx={{ width: 300 }}>
+    <Box sx={{ width: 300, ml: 6 }}>
+      <Typography id="input-slider" sx={{ml: 3, color: '#717171'}}>
+        Temp. range
+      </Typography>
       <Slider
         aria-label="Always visible"
-        value={parseInt(value)}
+        value={[minTempValue, maxTempValue]}
         onChange={handleChange}
         getAriaValueText={valuetext}
         step={1}
