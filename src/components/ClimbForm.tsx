@@ -5,15 +5,9 @@ import InputLabel from "@mui/material/InputLabel";
 import styled from "styled-components";
 import Button from "./Button";
 import Input from "./Input";
-import { FlexStartRow, FormButton } from "./StyledComponents";
+import { FlexStartRow, FormButton, Row } from "./StyledComponents";
 import TextArea from "./TextArea";
 import ClimbTypeRadioButtons from "./ClimbTypeRadioButtons";
-
-export const Row = styled.div`
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-`;
 
 const ClimbInputRow = styled(Row)`
   margin-bottom: 12px;

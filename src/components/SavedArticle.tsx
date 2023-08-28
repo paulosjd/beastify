@@ -7,7 +7,7 @@ import Button from "./Button";
 import Input from "./Input";
 import { AppContext } from "../AppContext";
 import { SavedArticleType } from "../lib/types";
-import { Spacing } from "./StyledComponents";
+import { Spacing, Row } from "./StyledComponents";
 import TextArea from "./TextArea";
 import styles from "./styles.module.css";
 import ArticleTags from "./ArticleTags";
@@ -19,12 +19,6 @@ const Wrapper = styled.div`
   border-bottom: 1px solid #ccc;
   padding-bottom: 10px;
   text-align: left;
-`;
-
-export const Row = styled.div`
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
 `;
 
 const RowMargin = styled(Row)`

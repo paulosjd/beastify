@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { IconButton } from "@mui/material";
 import { DemoContainer, DemoItem } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -7,6 +7,7 @@ import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import ClearIcon from '@mui/icons-material/Clear';
 import ExpandCircleDownIcon from '@mui/icons-material/ExpandCircleDown';
+import NotesIcon from '@mui/icons-material/Notes';
 import { Dayjs } from "dayjs";
 import dayjs from 'dayjs';
 import styled from "styled-components";
@@ -15,12 +16,13 @@ import Input from "./Input";
 import { AppContext } from "../AppContext";
 import { sortByName } from "../lib/helpers";
 import { SavedTodoCragType } from "../lib/types";
-import { Spacing, FormButton, FlexStartRow } from "./StyledComponents";
+import { Spacing, FormButton, Row, FlexStartRow } from "./StyledComponents";
 import TextArea from "./TextArea";
 import TempPicker from "./TempPicker";
 import ClimbForm from "./ClimbForm";
 import ConfirmDelete from "./ConfirmDelete";
 import styles from "./styles.module.css";
+import SavedCragInfo from "./SavedCragInfo";
 
 const Wrapper = styled.div`
   width: 100%;
@@ -28,12 +30,6 @@ const Wrapper = styled.div`
   border-bottom: 1px solid #ccc;
   padding-bottom: 10px;
   text-align: left;
-`;
-
-export const Row = styled.div`
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
 `;
 
 const ItemText = styled.p`
@@ -47,7 +43,7 @@ const ClimbItemRow = styled(FlexStartRow)`
 const CragInput = styled(Input)`
   min-height: 45px;
   height: 56px;
-  width: 20%;
+  width: 17%;
   margin-left: 12px;
 `;
 
@@ -89,6 +85,19 @@ const SavedCrag = (props: SavedCragProps) => {
   const newClimbData = { newClimbName, newClimbType, newClimbNotes, newClimbGrade };
   const todoClimbs = savedTodoClimbs.filter(i => i.cragId === itemId)
 
+  useEffect(() => {
+    const handleEsc = (evt: KeyboardEvent) => {
+      if (evt.key === 'Escape' && (isEdit || isView)) {
+        viewToggle();
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => {
+      window.removeEventListener('keydown', handleEsc);
+    };
+    // eslint-disable-next-line
+  }, []);
+
   const viewToggle = () => {
     resetClimbForm();
     cancelAddCrag();
@@ -120,8 +129,6 @@ const SavedCrag = (props: SavedCragProps) => {
   };
 
   const handleSave = () => {
-    console.log(driveTimeValue.toString())
-    // todo daysjs(  on setstate initial value ?
     updateSavedTodoCrag({
       id: itemId,
       name,
@@ -180,7 +187,15 @@ const SavedCrag = (props: SavedCragProps) => {
     }
   }
 
-  return (
+  const timePickSlotProps = {
+    textField: {
+      error: false,
+    }
+  };
+
+  // TODO reduce space below title when not view/edit
+
+    return (
     <Wrapper>
       <Row>
         <h4 className={`${styles.titleRowElem} ${styles.font18}`} onClick={viewToggle}>
@@ -205,14 +220,17 @@ const SavedCrag = (props: SavedCragProps) => {
           </>
         )}
       </Row>
-      {isView && geoCoordinatesValue && (
-        <Row className={styles.mb10}>
-          <ItemText><strong>Geo: </strong>{geoCoordinatesValue}</ItemText>
-        </Row>
+      {isView && (driveTime || approachTime || (maxTemp || minTemp)) && (
+        <SavedCragInfo
+          driveTime={driveTime}
+          approachTime={approachTime}
+          maxTemp={maxTemp}
+          minTemp={minTemp}
+        />
       )}
-      {isView && conditionsValue && (
-        <Row className={styles.mb10}>
-          <ItemText><strong>Access and conditions: </strong>{conditionsValue}</ItemText>
+      {isView && conditions && (
+        <Row className={`${styles.mb15} ${styles.mt5}`}>
+          <ItemText><strong>Notes: </strong>{conditions}</ItemText>
         </Row>
       )}
       {isAddClimb && (
@@ -227,27 +245,33 @@ const SavedCrag = (props: SavedCragProps) => {
         <>
           <div className={styles.mb10} style={{display: 'flex'}}>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <TimePicker
-                views={['minutes', ]}
-                format="mm"
-                label={'Drive time'}
-                value={driveTimeValue ? dayjs().minute(parseInt(driveTimeValue)) : ''}
-                onChange={( val) => setDriveTimeValue(dayjs(val).minute().toString())}
-                sx={{mr: 2}}
-              />
-              <TimePicker
-                views={['minutes', ]}
-                format="mm"
-                label={'Approach time'}
-                value={approachTimeValue ? dayjs().minute(parseInt(approachTimeValue)) : ''}
-                onChange={( val) => setApproachTimeValue(dayjs(val).minute().toString())}
-                sx={{mr: 2}}
-              />
+              <div className={styles.w18pc}>
+                <TimePicker
+                  views={['minutes', ]}
+                  format="mm"
+                  label={'Drive time'}
+                  value={driveTimeValue ? dayjs().minute(parseInt(driveTimeValue)) : ''}
+                  onChange={( val) => setDriveTimeValue(dayjs(val).minute().toString())}
+                  sx={{mr: 2}}
+                  slotProps={timePickSlotProps}
+                />
+              </div>
+              <div className={styles.w18pc}>
+                <TimePicker
+                  views={['minutes', ]}
+                  format="mm"
+                  label={'Approach time'}
+                  value={approachTimeValue ? dayjs().minute(parseInt(approachTimeValue)) : ''}
+                  onChange={( val) => setApproachTimeValue(dayjs(val).minute().toString())}
+                  sx={{mr: 2}}
+                  slotProps={timePickSlotProps}
+                />
+              </div>
             </LocalizationProvider>
             <CragInput
               value={geoCoordinatesValue}
               name="geoCoordinates"
-              placeholder="GeoCoordinates e.g. 50.4706,-3.50215"
+              placeholder="GeoCoords. e.g. 50.4706,-3.50215"
               onChange={({ target }) => setGeoCoordinatesValue(target.value)}
             />
             <TempPicker
@@ -298,7 +322,7 @@ const SavedCrag = (props: SavedCragProps) => {
         ))}
       </div>
       {isView && !isAddClimb && (
-        <Row >
+        <Row>
           <FormButton onClick={() => setAddClimbCragId(itemId)}>
             Add climb
           </FormButton>

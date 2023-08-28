@@ -21,9 +21,7 @@ type TrackerOptionsProps = {
 
 const TrackerOptions = (props: TrackerOptionsProps): ReactElement => {
 
-  const {
-    chartType, setChartType
-  } = props;
+  const { chartType, setChartType } = props;
 
   const handleChartTypeChange = (target: HTMLButtonElement) => {
     setChartType(target.value);

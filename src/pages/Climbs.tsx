@@ -71,7 +71,9 @@ const Climbs = (): ReactElement => {
 
   return (
     <TodoClimbsWrapper>
-      <CragMap />
+      <CragMap
+        markerItems={savedTodoCrags.map(i => ({ name: i.name, coordinates: i.geoCoordinates }))}
+      />
       <SavedItemWrapper>
         {savedTodoCrags.sort(sortByName).map((item) => (
           <SavedCrag

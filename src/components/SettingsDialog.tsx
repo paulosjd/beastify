@@ -36,12 +36,12 @@ const SettingsDialog = (props: SettingsDialogProps) => {
   const [pullupsSheetId, setPullupsSheetId] = useState<string>('');
 
   useEffect(() => {
-    // getSheetIdConfigData();
+    console.log('useeffe')
     setBodyweightSheetId(sheetIdConfigData.bodyWeightSheetId || '');
     setLogbookSheetId(sheetIdConfigData.logbookSheetId || '');
     setPullupsSheetId(sheetIdConfigData.pullupsSheetId || '');
     // eslint-disable-next-line
-  }, [sheetIdConfigData]);
+  }, [sheetIdConfigData, open]);
 
   const handleSubmit = async () => {
     if (sheetIdConfigData.id) {

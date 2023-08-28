@@ -1,4 +1,3 @@
-
 import React from "react"
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps"
 
@@ -8,11 +7,22 @@ type MarkerObj = {
   coordinates: [number, number]
 };
 
-const markers: MarkerObj[] = [
-  { markerOffset: 0, name: "Lima", coordinates: [-1.3443, 50.2334] }
-];
+type MarkerItem = {
+  name: string;
+  coordinates: string
+};
 
-const CragMap = () => {
+type CragMapProps = {
+  markerItems: MarkerItem[];
+}
+
+const CragMap = ({ markerItems }: CragMapProps) => {
+
+  const markers: MarkerObj[] = markerItems.map((item) => {
+    const [lat, lon] = item.coordinates.split(',').slice(0,2);
+    return { markerOffset: 0, name: item.name, coordinates: [parseFloat(lon) || 0, parseFloat(lat) || 0] }
+  });
+
   return (
     <ComposableMap
       projection="geoAzimuthalEqualArea"
