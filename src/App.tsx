@@ -22,21 +22,20 @@ const AppWrapper = styled.div`
 `;
 
 function App() {
-  const [openSettingsDialog, setOpenSettingsDialog] = useState<boolean>(false);
+  const [settingsDialogType, setSettingsDialogType] = useState<string>('');
   const {
-    sheetIdConfigData, currentUser, getSheetIdConfigData, addSheetIdConfig, updateSheetIdConfig
+    userConfig, currentUser, getUserConfig, addSheetIdConfig, updateSheetIdConfig
   } = useContext(AppContext);
 
   useEffect(() => {
-    getSheetIdConfigData();
+    getUserConfig();
     // eslint-disable-next-line
   }, [currentUser]);
-
 
   return (
     <BrowserRouter>
       <Navbar
-        setOpenSettingsDialog={setOpenSettingsDialog}
+        setSettingsDialogType={setSettingsDialogType}
       />
       <AppWrapper>
         <Switch>
@@ -50,8 +49,8 @@ function App() {
           <Redirect path="*" to="/home" />
         </Switch>
         <SettingsDialog
-          open={openSettingsDialog}
-          onClose={() => setOpenSettingsDialog(false)}
+          settingsDialogType={settingsDialogType}
+          onClose={() => setSettingsDialogType('')}
         />
       </AppWrapper>
     </BrowserRouter>

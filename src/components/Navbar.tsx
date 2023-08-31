@@ -1,6 +1,6 @@
 import React, { ReactElement, useContext, useState, ChangeEvent, MouseEvent } from "react";
 import { withRouter, RouteComponentProps } from "react-router";
-import {Link, useLocation} from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import styled from "styled-components";
 import Box from '@mui/material/Box';
 import Menu from '@mui/material/Menu';
@@ -9,6 +9,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Settings from '@mui/icons-material/Settings';
+import SourceIcon from '@mui/icons-material/Source';
 import Logout from '@mui/icons-material/Logout';
 import { Spacing } from "./StyledComponents";
 import { AppContext } from "../AppContext";
@@ -32,7 +33,7 @@ const Avatar = styled.img`
 `;
 
 interface NavProps {
-  setOpenSettingsDialog: (val: boolean) => void;
+  setSettingsDialogType: (val: string) => void;
 }
 
 interface AccountMenuProps extends NavProps {
@@ -43,7 +44,7 @@ interface AccountMenuProps extends NavProps {
 
 const AccountMenu = (props: AccountMenuProps): ReactElement => {
 
-  const { avatar, setOpenSettingsDialog, handleImageChange, signOutUser } = props;
+  const { avatar, setSettingsDialogType, handleImageChange, signOutUser } = props;
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: MouseEvent<HTMLElement>) => {
@@ -113,11 +114,17 @@ const AccountMenu = (props: AccountMenuProps): ReactElement => {
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <MenuItem onClick={() => setOpenSettingsDialog(true)}>
+        <MenuItem onClick={() => setSettingsDialogType('sheetIds')}>
+          <ListItemIcon>
+            <SourceIcon fontSize="small" />
+          </ListItemIcon>
+          Sheet IDs
+        </MenuItem>
+        <MenuItem onClick={() => setSettingsDialogType('mapCenter')}>
           <ListItemIcon>
             <Settings fontSize="small" />
           </ListItemIcon>
-          Settings
+          Map Settings
         </MenuItem>
         <MenuItem component={Link} to={{ pathname: "/login", state: { logout: true } }}>
           <ListItemIcon>
@@ -155,7 +162,7 @@ const NavBar: React.FunctionComponent<NavBarProps & RouteComponentProps> = (prop
     <NavbarStyle>
       <Spacing>
         <AccountMenu
-          setOpenSettingsDialog={props.setOpenSettingsDialog}
+          setSettingsDialogType={props.setSettingsDialogType}
           avatar={currentUser?.avatar}
           handleImageChange={handleImageChange}
           signOutUser={signOutUser}

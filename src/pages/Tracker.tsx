@@ -23,19 +23,19 @@ const TooltipWrapper = styled.div`
 const Tracker = (): ReactElement => {
 
   const [chartType, setChartType] = useState<string>('absolute');
-  const { sheetIdConfigData } = useContext(AppContext);
+  const { userConfig } = useContext(AppContext);
 
   const lineColors = ['#1F77B4', '#ff7f0e', '#2ca02c', '#9467bd', '#bcbd22'];
   const dataKeys = ['1r', '2r', '3r', '4r', '5r'];
   const showWeightLine = chartType === 'bodyWeight';
   const sheetsObj = {
     apiKey: process.env.REACT_APP_SHEETS_API_KEY || '',
-    sheetId: sheetIdConfigData.pullupsSheetId || '',
+    sheetId: userConfig.pullupsSheetId || '',
   };
 
   const { data, loading } = useGoogleSheets(sheetsObj);
   let { data: bwSheetData } = useGoogleSheets({
-    ...sheetsObj, sheetId: sheetIdConfigData.bodyWeightSheetId || ''
+    ...sheetsObj, sheetId: userConfig.bodyWeightSheetId || ''
   });
 
   if (loading) {

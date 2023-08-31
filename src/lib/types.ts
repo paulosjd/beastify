@@ -93,13 +93,16 @@ export interface EditedCragType {
   newConditions?: string;
 }
 
-export interface SheetIdConfigType {
+export interface UserConfigType {
   id?: string;
   bodyWeightSheetId?: string;
   logbookSheetId?: string;
   pullupsSheetId?: string;
+  mapCenterLat?: string;
+  mapCenterLon?: string;
+  mapZoom?: string;
 }
 
-export interface SavedSheetIdConfigType extends SheetIdConfigType {
+export interface SavedUserConfigType extends UserConfigType {
   id: string;
 }

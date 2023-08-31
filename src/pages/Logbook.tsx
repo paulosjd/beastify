@@ -33,7 +33,7 @@ const Logbook = (): ReactElement => {
   const [timeframe, setTimeframe] = useState<number>(1);
   const [climbType, setClimbType] = useState<string>('boulder');
   const [chartType, setChartType] = useState<string>('date');
-  const { sheetIdConfigData } = useContext(AppContext);
+  const { userConfig } = useContext(AppContext);
 
   const handleTimeframeChange = (value: number | string ) => {
     if (typeof value === 'number') {
@@ -48,7 +48,7 @@ const Logbook = (): ReactElement => {
 
   const sheetsObj = {
     apiKey: process.env.REACT_APP_SHEETS_API_KEY || '',
-    sheetId: sheetIdConfigData.logbookSheetId || '',
+    sheetId: userConfig.logbookSheetId || '',
   };
 
   const { data, loading } = useGoogleSheets(sheetsObj);

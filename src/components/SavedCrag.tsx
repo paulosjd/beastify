@@ -193,9 +193,7 @@ const SavedCrag = (props: SavedCragProps) => {
     }
   };
 
-  // TODO reduce space below title when not view/edit
-
-    return (
+  return (
     <Wrapper>
       <Row>
         <h4 className={`${styles.titleRowElem} ${styles.font18}`} onClick={viewToggle}>
@@ -305,7 +303,7 @@ const SavedCrag = (props: SavedCragProps) => {
       )}
       <div>
         {todoClimbs.sort(sortByName).map(climbItem => (
-          <ClimbItemRow>
+          <ClimbItemRow key={climbItem.id}>
             <p className={styles.climbText}>{climbItem.name}</p>
             <p className={styles.climbText}>{climbItem.grade}</p>
             {climbItem.notes && (<p className={`${styles.climbText} ${styles.secondaryColor}`}>{climbItem.notes}</p>)}

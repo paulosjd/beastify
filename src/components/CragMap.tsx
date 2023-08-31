@@ -1,5 +1,7 @@
-import React from "react"
+import React, {useContext, useState} from "react"
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps"
+import { CRAG_MAP_ZOOM, CRAG_MAP_CENTER_LAT, CRAG_MAP_CENTER_LON } from '../lib/constants'
+import { AppContext } from "../AppContext";
 
 type MarkerObj = {
   markerOffset: number;
@@ -18,6 +20,8 @@ type CragMapProps = {
 
 const CragMap = ({ markerItems }: CragMapProps) => {
 
+  const { userConfig: { mapCenterLat, mapCenterLon, mapZoom }} = useContext(AppContext);
+
   const markers: MarkerObj[] = markerItems.map((item) => {
     const [lat, lon] = item.coordinates.split(',').slice(0,2);
     return { markerOffset: 0, name: item.name, coordinates: [parseFloat(lon) || 0, parseFloat(lat) || 0] }
@@ -27,8 +31,8 @@ const CragMap = ({ markerItems }: CragMapProps) => {
     <ComposableMap
       projection="geoAzimuthalEqualArea"
       projectionConfig={{
-        rotate: [4.4, -50.9, 0],
-        scale: 24000,
+        rotate: [-(mapCenterLon ? mapCenterLon : CRAG_MAP_CENTER_LON), -(mapCenterLat ? mapCenterLat : CRAG_MAP_CENTER_LAT), 0],
+        scale: mapZoom ? parseInt(mapZoom) * 1000 : CRAG_MAP_ZOOM,
       }}
       style={{ width: "40%", height: "auto" }}
     >

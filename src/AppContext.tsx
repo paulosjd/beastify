@@ -39,8 +39,8 @@ import {
   SavedTodoClimbType,
   TodoClimbType,
   UserType,
-  SheetIdConfigType,
-  SavedSheetIdConfigType
+  UserConfigType,
+  SavedUserConfigType
 } from "./lib/types";
 
 interface Props {
@@ -57,15 +57,15 @@ interface ContextType {
   savedTodoCrags: SavedTodoCragType[];
   savedTodoClimbs: SavedTodoClimbType[];
   logItemNotes: NotesByLogItemKeyType;
-  sheetIdConfigData: SheetIdConfigType;
+  userConfig: UserConfigType;
   logInUser(email: string, password: string): Promise<void>;
   signInWithGoogle(): Promise<void>;
   registerUser(data: RegistrationType): Promise<void>;
   updateAvatar(file: { image: Blob; ext: string }): Promise<void>;
   signOutUser(): Promise<void>;
-  addSheetIdConfig(params: SheetIdConfigType): Promise<void>;
-  updateSheetIdConfig(params: SavedSheetIdConfigType): Promise<void>;
-  getSheetIdConfigData(): Promise<void>;
+  addSheetIdConfig(params: UserConfigType): Promise<void>;
+  updateSheetIdConfig(params: SavedUserConfigType): Promise<void>;
+  getUserConfig(): Promise<void>;
   addTodoCrag(params: TodoCragType): Promise<void>;
   updateSavedTodoCrag(params: EditedCragType): Promise<void>;
   getSavedTodoCrags(): Promise<void>;
@@ -89,7 +89,7 @@ const contextDefaultVal: ContextType = {
   savedTodoCrags: [],
   savedTodoClimbs: [],
   logItemNotes: {},
-  sheetIdConfigData: {},
+  userConfig: {},
   logInUser: async () => {},
   signInWithGoogle: async () => {},
   registerUser: async () => {},
@@ -97,7 +97,7 @@ const contextDefaultVal: ContextType = {
   signOutUser: async () => {},
   addSheetIdConfig: async () => {},
   updateSheetIdConfig: async () => {},
-  getSheetIdConfigData: async () => {},
+  getUserConfig: async () => {},
   addTodoCrag: async () => {},
   getSavedTodoCrags: async () => {},
   updateSavedTodoCrag: async () => {},
@@ -123,7 +123,7 @@ export default function AppContextProvider({ children }: Props): ReactElement {
   const [savedTodoClimbs, setSavedTodoClimbs] = useState<SavedTodoClimbType[]>([]);
   const [savedArticles, setSavedArticles] = useState<SavedArticleType[]>([]);
   const [savedLogItemNotes, setSavedLogItemNotes] = useState<NotesByLogItemKeyType>({});
-  const [sheetIdConfigData, setSheetIdConfigData] = useState<SheetIdConfigType>({});
+  const [userConfig, setUserConfig] = useState<UserConfigType>({});
 
   const logInUser = async (email: string, password: string) => {
     setLoading(true);
@@ -504,50 +504,58 @@ export default function AppContextProvider({ children }: Props): ReactElement {
     } catch (error) { }
   };
 
-  const addSheetIdConfig = async (params: SheetIdConfigType) => {
+  const addSheetIdConfig = async (params: UserConfigType) => {
+    console.log(params)
+    const { bodyWeightSheetId, logbookSheetId, pullupsSheetId, mapCenterLat, mapCenterLon, mapZoom } = params;
     try {
       const docRef = doc(
         db,
-        "sheetIdConfig",
+        "userConfig",
         uuid() /*unique id for new document, n.b.firestore can do this for you if you leave the third parameter empty*/
       );
       const userId = auth.currentUser;
       if (userId !== null) {
         await setDoc(docRef, {
           userId: userId.uid,
-          bodyWeightSheetId: params.bodyWeightSheetId,
-          logbookSheetId: params.logbookSheetId,
-          pullupsSheetId: params.pullupsSheetId
+          bodyWeightSheetId: bodyWeightSheetId || '',
+          logbookSheetId: logbookSheetId || '',
+          pullupsSheetId: pullupsSheetId || '',
+          mapCenterLat: mapCenterLat || '',
+          mapCenterLon: mapCenterLon || '',
+          mapZoom: mapZoom || ''
         });
       }
     } catch (error) { }
   };
 
-  const updateSheetIdConfig = async (params: SavedSheetIdConfigType) => {
-    const { id, bodyWeightSheetId, logbookSheetId, pullupsSheetId } = params;
+  const updateSheetIdConfig = async (params: SavedUserConfigType) => {
+    const { id, bodyWeightSheetId, logbookSheetId, pullupsSheetId, mapCenterLat, mapCenterLon, mapZoom } = params;
     try {
-      const docRef = doc(db, "sheetIdConfig", id);
+      const docRef = doc(db, "userConfig", id);
       await updateDoc(docRef, {
-        bodyWeightSheetId: bodyWeightSheetId,
-        logbookSheetId: logbookSheetId,
-        pullupsSheetId: pullupsSheetId
+        bodyWeightSheetId: bodyWeightSheetId || '',
+        logbookSheetId: logbookSheetId || '',
+        pullupsSheetId: pullupsSheetId || '',
+        mapCenterLat: mapCenterLat || '',
+        mapCenterLon: mapCenterLon || '',
+        mapZoom: mapZoom || ''
       });
     } catch (error) { }
   };
 
-  const getSheetIdConfigData = async () => {
+  const getUserConfig = async () => {
     try {
       if (auth.currentUser !== null) {
         const userId = auth.currentUser.uid;
         const q = query(
-          collection(db, "sheetIdConfig"),
+          collection(db, "userConfig"),
           where("userId", "==", userId)
         );
-        setSheetIdConfigData({});
+        setUserConfig({});
         const querySnapshot = await getDocs(q);
         if (!querySnapshot.empty) {
           const doc = querySnapshot.docs[0];
-          setSheetIdConfigData({
+          setUserConfig({
             id: doc.id,
             ...doc.data()
           })
@@ -574,8 +582,8 @@ export default function AppContextProvider({ children }: Props): ReactElement {
         signOutUser,
         addSheetIdConfig,
         updateSheetIdConfig,
-        getSheetIdConfigData,
-        sheetIdConfigData,
+        getUserConfig,
+        userConfig,
         addTodoCrag,
         getSavedTodoCrags,
         addTodoClimb,
