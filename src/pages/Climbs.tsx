@@ -7,6 +7,7 @@ import TextArea from "../components/TextArea";
 import SavedCrag from "../components/SavedCrag";
 import { sortByName } from "../lib/helpers";
 import { Spacing, Wrapper, SavedItemWrapper, FormButton, FlexStartRow } from "../components/StyledComponents";
+import CragForm from "../components/CragForm";
 import CragMap from "../components/CragMap";
 
 const TodoClimbsWrapper = styled(Wrapper)`
@@ -19,14 +20,18 @@ const AddItemWrapper = styled.div`
   width: 100%
 `;
 
+const NameInput = styled(Input)`
+  margin-bottom: 24px;
+`;
+
 const Climbs = (): ReactElement => {
 
   const [editCragId, setEditCragId] = useState<string>("");
   const [viewCragId, setViewCragId] = useState<string>("");
   const [approachTime, setApproachTime] = useState<string>('');
   const [driveTime, setDriveTime] = useState<string>('');
-  const [minTemp, setMinTemp] = useState<string>('');
-  const [maxTemp, setMaxTemp] = useState<string>('');
+  const [minTemp, setMinTemp] = useState<number>(0);
+  const [maxTemp, setMaxTemp] = useState<number>(25);
   const [geoCoordinates, setGeoCoordinates] = useState<string>("");
   const [cragName, setCragName] = useState<string>("");
   const [conditions, setConditions] = useState<string>("");
@@ -42,7 +47,13 @@ const Climbs = (): ReactElement => {
 
   const handleSubmit = async () => {
     await addTodoCrag({
-      name: cragName, approachTime, driveTime, minTemp, maxTemp, geoCoordinates, conditions
+      name: cragName,
+      approachTime,
+      driveTime,
+      minTemp: minTemp.toString(),
+      maxTemp: maxTemp.toString(),
+      geoCoordinates,
+      conditions
     });
     setGeoCoordinates("");
     setCragName("");
@@ -102,23 +113,25 @@ const Climbs = (): ReactElement => {
         )}
         {isAddCrag && (
           <div>
-            <Input
+            <NameInput
               value={cragName}
               name="cragName"
               placeholder="Crag Name"
               onChange={({ target }) => setCragName(target.value)}
             />
-            <Input
-              value={geoCoordinates}
-              name="geoCoordinates"
-              placeholder="GeoCoordinates e.g. 50.4706,-3.50215"
-              onChange={({ target }) => setGeoCoordinates(target.value)}
-            />
-            <TextArea
-              value={conditions}
-              name="conditions"
-              placeholder="Access and Conditions"
-              onChange={({ target }) => setConditions(target.value)}
+            <CragForm
+              driveTime={driveTime}
+              setDriveTime={setDriveTime}
+              approachTime={approachTime}
+              setApproachTime={setApproachTime}
+              geoCoordinates={geoCoordinates}
+              setGeoCoordinates={setGeoCoordinates}
+              minTemp={minTemp}
+              setMinTemp={setMinTemp}
+              maxTemp={maxTemp}
+              setMaxTemp={setMaxTemp}
+              conditions={conditions}
+              setConditions={setConditions}
             />
             <FlexStartRow>
               <FormButton onClick={cancelAdd} >

@@ -1,25 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { IconButton } from "@mui/material";
-import { DemoContainer, DemoItem } from '@mui/x-date-pickers/internals/demo';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import ClearIcon from '@mui/icons-material/Clear';
 import ExpandCircleDownIcon from '@mui/icons-material/ExpandCircleDown';
-import NotesIcon from '@mui/icons-material/Notes';
-import { Dayjs } from "dayjs";
-import dayjs from 'dayjs';
 import styled from "styled-components";
 import Button from "./Button";
-import Input from "./Input";
 import { AppContext } from "../AppContext";
 import { sortByName } from "../lib/helpers";
 import { SavedTodoCragType } from "../lib/types";
 import { Spacing, FormButton, Row, FlexStartRow } from "./StyledComponents";
-import TextArea from "./TextArea";
-import TempPicker from "./TempPicker";
 import ClimbForm from "./ClimbForm";
+import CragForm from "./CragForm";
 import ConfirmDelete from "./ConfirmDelete";
 import styles from "./styles.module.css";
 import SavedCragInfo from "./SavedCragInfo";
@@ -40,12 +31,6 @@ const ClimbItemRow = styled(FlexStartRow)`
   margin-top: 5px;
 `;
 
-const CragInput = styled(Input)`
-  min-height: 45px;
-  height: 56px;
-  width: 17%;
-  margin-left: 12px;
-`;
 
 type SavedCragProps = {
   savedItem: SavedTodoCragType;
@@ -128,8 +113,8 @@ const SavedCrag = (props: SavedCragProps) => {
     setViewItemId('');
   };
 
-  const handleSave = () => {
-    updateSavedTodoCrag({
+  const handleSave = async () => {
+    await updateSavedTodoCrag({
       id: itemId,
       name,
       newApproachTime: approachTimeValue,
@@ -140,6 +125,7 @@ const SavedCrag = (props: SavedCragProps) => {
       newConditions: conditionsValue
     });
     cancelEdit();
+    await getSavedTodoCrags();
   };
 
   const handleDeleteCrag = async () => {
@@ -186,12 +172,6 @@ const SavedCrag = (props: SavedCragProps) => {
         break;
     }
   }
-
-  const timePickSlotProps = {
-    textField: {
-      error: false,
-    }
-  };
 
   return (
     <Wrapper>
@@ -241,50 +221,19 @@ const SavedCrag = (props: SavedCragProps) => {
       )}
       {isEdit && (
         <>
-          <div className={styles.mb10} style={{display: 'flex'}}>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <div className={styles.w18pc}>
-                <TimePicker
-                  views={['minutes', ]}
-                  format="mm"
-                  label={'Drive time'}
-                  value={driveTimeValue ? dayjs().minute(parseInt(driveTimeValue)) : ''}
-                  onChange={( val) => setDriveTimeValue(dayjs(val).minute().toString())}
-                  sx={{mr: 2}}
-                  slotProps={timePickSlotProps}
-                />
-              </div>
-              <div className={styles.w18pc}>
-                <TimePicker
-                  views={['minutes', ]}
-                  format="mm"
-                  label={'Approach time'}
-                  value={approachTimeValue ? dayjs().minute(parseInt(approachTimeValue)) : ''}
-                  onChange={( val) => setApproachTimeValue(dayjs(val).minute().toString())}
-                  sx={{mr: 2}}
-                  slotProps={timePickSlotProps}
-                />
-              </div>
-            </LocalizationProvider>
-            <CragInput
-              value={geoCoordinatesValue}
-              name="geoCoordinates"
-              placeholder="GeoCoords. e.g. 50.4706,-3.50215"
-              onChange={({ target }) => setGeoCoordinatesValue(target.value)}
-            />
-            <TempPicker
-              minTempValue={minTempValue}
-              maxTempValue={maxTempValue}
-              setMinTempValue={setMinTempValue}
-              setMaxTempValue={setMaxTempValue}
-            />
-          </div>
-          <TextArea
-            value={conditionsValue}
-            name="conditions"
-            placeholder="Access and conditions"
-            onChange={({ target }) => setConditionsValue(target.value)}
-            style={{maxHeight: '45px', marginBottom: '10px'}}
+          <CragForm
+            driveTime={driveTimeValue}
+            setDriveTime={setDriveTimeValue}
+            approachTime={approachTimeValue}
+            setApproachTime={setApproachTimeValue}
+            geoCoordinates={geoCoordinatesValue}
+            setGeoCoordinates={setGeoCoordinatesValue}
+            minTemp={minTempValue}
+            setMinTemp={setMinTempValue}
+            maxTemp={maxTempValue}
+            setMaxTemp={setMaxTempValue}
+            conditions={conditionsValue}
+            setConditions={setConditionsValue}
           />
           <Spacing mb={'10px'}>
             <FlexStartRow>

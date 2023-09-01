@@ -44,22 +44,22 @@ const SavedCragInfo = (props: SavedCragInfoProps): ReactElement => {
   return (
     <div>
       <FlexStartRow className={styles.mb10}>
-        {driveTime && (
+        {!!parseInt(driveTime) && (
             <>
               <DriveEtaIcon />
               <ItemText>{`${driveTime} minutes`}</ItemText>
             </>
         )}
-        {approachTime && (
+        {!!parseInt(approachTime) && (
           <>
             <DirectionsWalkIcon />
             <ItemText>{`${approachTime} minutes`}</ItemText>
           </>
         )}
-        {(maxTemp || minTemp) && (
+        {(parseInt(maxTemp) || parseInt(minTemp)) && (
           <>
             <ThermostatIcon />
-            <ItemText>{`${minTemp || 0}°C - ${maxTemp || 25}°C`}</ItemText>
+            <ItemText>{`${parseInt(minTemp) ? minTemp : 0}°C - ${parseInt(maxTemp) ? maxTemp : 25}°C`}</ItemText>
           </>
         )}
       </FlexStartRow>

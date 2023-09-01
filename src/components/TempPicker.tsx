@@ -4,10 +4,10 @@ import Slider from '@mui/material/Slider';
 import Typography from '@mui/material/Typography';
 
 type TempPickerProps = {
-  minTempValue: number;
-  maxTempValue: number;
-  setMinTempValue: (val: number) => void;
-  setMaxTempValue: (val: number) => void;
+  minTemp: number;
+  maxTemp: number;
+  setMinTemp: (val: number) => void;
+  setMaxTemp: (val: number) => void;
 };
 
 const marks = [
@@ -41,23 +41,22 @@ const valuetext = (value: number) => {
   return `${value}°C`;
 };
 
-const TempPicker = ({ minTempValue, maxTempValue, setMinTempValue, setMaxTempValue }: TempPickerProps) => {
+const TempPicker = ({ minTemp, maxTemp, setMinTemp, setMaxTemp }: TempPickerProps) => {
 
   const handleChange = (_ : Event, value: number | number[]) => {
     if (Array.isArray(value)) {
-      setMinTempValue(value[0]);
-      setMaxTempValue(value[1]);
+      setMinTemp(value[0]);
+      setMaxTemp(value[1]);
     }
   };
 
   return (
     <Box sx={{ width: 300, ml: 6 }}>
-      <Typography id="input-slider" sx={{ml: 3, color: '#717171'}}>
+      <Typography id="input-slider" sx={{ color: '#717171' }}>
         Temp. range
       </Typography>
       <Slider
-        aria-label="Always visible"
-        value={[minTempValue, maxTempValue]}
+        value={[minTemp, maxTemp]}
         onChange={handleChange}
         getAriaValueText={valuetext}
         step={1}
