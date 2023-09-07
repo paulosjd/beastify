@@ -82,6 +82,7 @@ const CragForm = (props: CragFormProps) => {
           maxTemp={maxTemp}
           setMinTemp={setMinTemp}
           setMaxTemp={setMaxTemp}
+          sxProps={{ width: 300, ml: 6 }}
         />
       </div>
       <TextArea

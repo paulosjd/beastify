@@ -1,4 +1,7 @@
 import React, { ReactElement, useContext, useEffect, useState } from "react";
+import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
+import Grid from '@mui/material/Grid';
 import styled from "styled-components";
 import { AppContext } from "../AppContext";
 import Button from "../components/Button";
@@ -6,12 +9,15 @@ import Input from "../components/Input";
 import TextArea from "../components/TextArea";
 import SavedCrag from "../components/SavedCrag";
 import { sortByName } from "../lib/helpers";
-import { Spacing, Wrapper, SavedItemWrapper, FormButton, FlexStartRow } from "../components/StyledComponents";
+import { Spacing, Row, Wrapper, SavedItemWrapper, FormButton, FlexStartRow } from "../components/StyledComponents";
 import CragForm from "../components/CragForm";
 import CragMap from "../components/CragMap";
+import CragMapOptions from "../components/CragMapOptions";
+import { CragFilterOptions } from "../lib/types";
 
 const TodoClimbsWrapper = styled(Wrapper)`
   display: flex;
+  width: 80%;
 `;
 
 const AddItemWrapper = styled.div`
@@ -28,16 +34,22 @@ const Climbs = (): ReactElement => {
 
   const [editCragId, setEditCragId] = useState<string>("");
   const [viewCragId, setViewCragId] = useState<string>("");
-  const [approachTime, setApproachTime] = useState<string>('');
-  const [driveTime, setDriveTime] = useState<string>('');
-  const [minTemp, setMinTemp] = useState<number>(0);
-  const [maxTemp, setMaxTemp] = useState<number>(25);
+  const [cragApproachTime, setApproachTime] = useState<string>('');
+  const [cragDriveTime, setCragDriveTime] = useState<string>('');
+  const [cragMinTemp, setCragMinTemp] = useState<number>(0);
+  const [cragMaxTemp, setCragMaxTemp] = useState<number>(25);
   const [geoCoordinates, setGeoCoordinates] = useState<string>("");
   const [cragName, setCragName] = useState<string>("");
   const [conditions, setConditions] = useState<string>("");
   const [addClimbCragId, setAddClimbCragId] = useState<string>('');
   const { addTodoCrag, getSavedTodoCrags, savedTodoCrags, getSavedTodoClimbs } = useContext(AppContext);
   const [isAddCrag, setIsAddCrag] = useState<boolean>(false);
+  const defaultFilterOptions = {
+    approachTime: '',
+    driveTime: '',
+    temp: 15
+  }
+  const [filterOptions, setFilterOptions] = useState<CragFilterOptions>(defaultFilterOptions);
 
   useEffect(() => {
     getSavedTodoCrags();
@@ -48,10 +60,10 @@ const Climbs = (): ReactElement => {
   const handleSubmit = async () => {
     await addTodoCrag({
       name: cragName,
-      approachTime,
-      driveTime,
-      minTemp: minTemp.toString(),
-      maxTemp: maxTemp.toString(),
+      approachTime: cragApproachTime,
+      driveTime: cragDriveTime,
+      minTemp: cragMinTemp.toString(),
+      maxTemp: cragMaxTemp.toString(),
       geoCoordinates,
       conditions
     });
@@ -80,13 +92,34 @@ const Climbs = (): ReactElement => {
     resetForm();
   };
 
+  let todoCrags = savedTodoCrags
+  if (filterOptions.temp || filterOptions.temp === 0) {
+    todoCrags = todoCrags.filter(crag => parseInt(crag.minTemp) <= filterOptions.temp && parseInt(crag.maxTemp) >= filterOptions.temp)
+  }
+  if (filterOptions.driveTime && (parseInt(filterOptions.driveTime) || parseInt(filterOptions.driveTime) === 0)) {
+    todoCrags = todoCrags.filter(crag => filterOptions.driveTime && parseInt(crag.driveTime) <= parseInt(filterOptions.driveTime))
+  }
+  if (filterOptions.approachTime && (parseInt(filterOptions.approachTime) || parseInt(filterOptions.approachTime) === 0)) {
+    todoCrags = todoCrags.filter(crag => filterOptions.approachTime && parseInt(crag.approachTime) <= parseInt(filterOptions.approachTime))
+  }
+
   return (
     <TodoClimbsWrapper>
-      <CragMap
-        markerItems={savedTodoCrags.map(i => ({ name: i.name, coordinates: i.geoCoordinates }))}
-      />
+      <Grid container spacing={2}>
+        <Grid item xs={9}>
+          <CragMap
+            markerItems={todoCrags.map(i => ({ name: i.name, coordinates: i.geoCoordinates }))}
+          />
+        </Grid>
+        <Grid item xs={3}>
+          <CragMapOptions
+            filterOptions={filterOptions}
+            setFilterOptions={setFilterOptions}
+          />
+        </Grid>
+      </Grid>
       <SavedItemWrapper>
-        {savedTodoCrags.sort(sortByName).map((item) => (
+        {todoCrags.sort(sortByName).map((item) => (
           <SavedCrag
             key={item.id}
             savedItem={item}
@@ -120,16 +153,16 @@ const Climbs = (): ReactElement => {
               onChange={({ target }) => setCragName(target.value)}
             />
             <CragForm
-              driveTime={driveTime}
-              setDriveTime={setDriveTime}
-              approachTime={approachTime}
+              driveTime={cragDriveTime}
+              setDriveTime={setCragDriveTime}
+              approachTime={cragApproachTime}
               setApproachTime={setApproachTime}
               geoCoordinates={geoCoordinates}
               setGeoCoordinates={setGeoCoordinates}
-              minTemp={minTemp}
-              setMinTemp={setMinTemp}
-              maxTemp={maxTemp}
-              setMaxTemp={setMaxTemp}
+              minTemp={cragMinTemp}
+              setMinTemp={setCragMinTemp}
+              maxTemp={cragMaxTemp}
+              setMaxTemp={setCragMaxTemp}
               conditions={conditions}
               setConditions={setConditions}
             />

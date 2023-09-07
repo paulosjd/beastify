@@ -34,7 +34,7 @@ const CragMap = ({ markerItems }: CragMapProps) => {
         rotate: [-(mapCenterLon ? mapCenterLon : CRAG_MAP_CENTER_LON), -(mapCenterLat ? mapCenterLat : CRAG_MAP_CENTER_LAT), 0],
         scale: mapZoom ? parseInt(mapZoom) * 1000 : CRAG_MAP_ZOOM,
       }}
-      style={{ width: "40%", height: "auto" }}
+      style={{ width: "50%", height: "auto" }}
     >
       <Geographies geography={'/uk-counties.json'}>
         {({ geographies }) =>

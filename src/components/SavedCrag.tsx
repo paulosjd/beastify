@@ -27,10 +27,13 @@ const ItemText = styled.p`
   margin: 0
 `;
 
+const CragTitleRow = styled(Row)`
+  margin-top: 4px;
+`;
+
 const ClimbItemRow = styled(FlexStartRow)`
   margin-top: 5px;
 `;
-
 
 type SavedCragProps = {
   savedItem: SavedTodoCragType;
@@ -175,11 +178,11 @@ const SavedCrag = (props: SavedCragProps) => {
 
   return (
     <Wrapper>
-      <Row>
+      <CragTitleRow>
         <h4 className={`${styles.titleRowElem} ${styles.font18}`} onClick={viewToggle}>
           {name}
         </h4>
-        <Spacing fitContent my="5px" float="right">
+        <Spacing fitContent float="right">
           <IconButton
             color="primary"
             component="label"
@@ -197,7 +200,7 @@ const SavedCrag = (props: SavedCragProps) => {
             </Spacing>
           </>
         )}
-      </Row>
+      </CragTitleRow>
       {isView && (driveTime || approachTime || (maxTemp || minTemp)) && (
         <SavedCragInfo
           driveTime={driveTime}

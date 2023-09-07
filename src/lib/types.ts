@@ -106,3 +106,9 @@ export interface UserConfigType {
 export interface SavedUserConfigType extends UserConfigType {
   id: string;
 }
+
+export interface CragFilterOptions {
+  approachTime?: string;
+  driveTime?: string;
+  temp: number;
+}
